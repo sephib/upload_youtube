@@ -9,7 +9,6 @@ audio_dir = 'data'  # Path where the videos are located
 extension_list = ('*.mp4', '*.flv')
 
 
-
 logging_config = dict(
     version = 1,
     formatters = {
@@ -30,16 +29,26 @@ logging_config = dict(
 dictConfig(logging_config)
 
 
-def logging_set():
-    pass
-
 
 def main():
+    # clean bad files
+
+
     audio_wma_files =Path(audio_dir).rglob('*.WMA')
     for audio_file in audio_wma_files:
         new_file = audio_file.parent / f'{audio_file.stem}.mp3'
-        AudioSegment.from_file(audio_file).export(new_file, format='mp3')
-        logger.debug(f'convert {audio_file} to {new_file}')
+        if not new_file.exists():
+            logger.debug(f'try to convert {audio_file}')
+            AudioSegment.from_file(audio_file).export(new_file, format='mp3')
+            logger.debug(f'convert {audio_file} to {new_file}')
+
+    # Get list of relevent files
+    ffjpg = sorted([f for f in p.iterdir() if (f.suffix in ['.jpg']) and not f.stem.startswith('.')])
+    ffjpg[-1], ffjpg[-2] = ffjpg[-2], ffjpg[-1]  #switch mavtir and haftara
+    ffmp3 = sorted([f for f in p.iterdir() if (f.suffix in ['.mp3']) and not f.stem.startswith('.')])
+
+    #create pairs
+    video_pair = [i for i in zip(ffjpg, ffmp3)]
 
         # for video in glob.glob(extension_list):
         #     mp3_filename = os.path.splitext(os.path.basename(video))[0] + '.mp3'
