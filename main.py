@@ -32,7 +32,11 @@ dictConfig(logging_config)
 
 def main():
     # clean bad files
+    # TODO Remove files starting with '.' or '_'
 
+    for file in Path(audio_dir).rglob('.*'):
+        file.unlink()
+        logger.debug(f'removed file: {file}')
 
     audio_wma_files =Path(audio_dir).rglob('*.WMA')
     for audio_file in audio_wma_files:
@@ -43,9 +47,9 @@ def main():
             logger.debug(f'convert {audio_file} to {new_file}')
 
     # Get list of relevent files
-    ffjpg = sorted([f for f in p.iterdir() if (f.suffix in ['.jpg']) and not f.stem.startswith('.')])
+    ffjpg = sorted([f for f in p.iterdir() if (f.suffix in ['.jpg']) ])
     ffjpg[-1], ffjpg[-2] = ffjpg[-2], ffjpg[-1]  #switch mavtir and haftara
-    ffmp3 = sorted([f for f in p.iterdir() if (f.suffix in ['.mp3']) and not f.stem.startswith('.')])
+    ffmp3 = sorted([f for f in p.iterdir() if (f.suffix in ['.mp3']) ])
 
     #create pairs
     video_pair = [i for i in zip(ffjpg, ffmp3)]
@@ -58,3 +62,4 @@ def main():
 if __name__ == '__main__':
     logger = lg.getLogger(__name__)
     main()
+    print('Done')
