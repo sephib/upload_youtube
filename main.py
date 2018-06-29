@@ -4,6 +4,8 @@ from pydub import AudioSegment
 from pathlib import Path
 import logging as lg
 from logging.config import dictConfig
+import subprocess
+import re
 
 audio_dir = 'data'  # Path where the videos are located
 extension_list = ('*.mp4', '*.flv')
@@ -36,21 +38,35 @@ def convert_audio_file(audio_file: Path, audio_format: str = 'mp3'):
         logger.debug(f'convert {audio_file} to {new_file}')
 
 
-def create_youtube_metadata(video_tuple):
+def get_name_alya(alya_file_name:str)->str:
+    aliya = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שביעי']
+    dict_aliya = dict(zip(range(1,8), aliya))
+    aliya_name = dict_aliya[int(re.findall('\d', alya_file_name.stem)[0])]
+    if aliya_name:
+        return aliya_name
+    else:
+        pass
+        # TODO Haftar Maftir
+
+
+def create_youtube_metadata(_image):
     meta_dict={}
     meta_dict['category'] = 'Music'
-    #TODO get ALYA Name
-    meta_dict['title'] = f' נוסח אשכנז -  {video_tuple[0].parts[-1]} - פרשת {video_tuple[0].parts[-2]}  '
-    meta_dict['description'] = f' {video_tuple[0].parts[-1]} קריאה בתורה לפרשת  '
-    meta_dict['description-file'] = None
-    meta_dict['tags'] = ' קריאה בתורה', f'{video_tuple[0].parts[-2]}'
+    #TODO get ALYA Name for mafit haftara
+    aliya_name = get_name_alya(_image.parts[-1])
+    meta_dict['title'] = f'נוסח אשכנז -  {aliya_name} - פרשת {_image.parts[-2]}'
+    meta_dict['description'] = f'{_image.parts[-1]} קריאה בתורה לפרשת'
+    #    meta_dict['description-file'] = None
+    meta_dict['tags'] = f'קריאה בתורה, {_image.parts[-2]}'
     meta_dict['privacy'] = 'public'
-    meta_dict['publish-at'] = None
+    #   meta_dict['publish-at'] = None
     meta_dict['recording-date'] = '2017'
     meta_dict['default-language'] = 'he'
-    meta_dict['default-audio-language']='he'
-    meta_dict['thumbnail'] = video_tuple[0]
-    meta_dict['playlist'] = f'פרשת {v[0].parts[-2]}'
+    meta_dict['default-audio-language'] = 'he'
+    meta_dict['thumbnail'] = _image
+    meta_dict['playlist'] = f'פרשת {_image.parts[-2]}'
+    meta_dict['client-secrets'] = 'youtube-upload-master/client_id.json'
+    # meta_dict['credentials-file'] = None
 
     return meta_dict
 
@@ -84,10 +100,13 @@ def main():
                     print(f'PROBLEM: number of files not equal in {l[0].parent}')
                     continue
                 video_pair = [i for i in zip(ffjpg, ffmp3)]
-                for v in video_pair:
-                    meta_dict = create_youtube_metadata(v)
+                for _image, _video in video_pair:
+                    meta_dict = create_youtube_metadata(_image)
                     # Run subprocess youtube_upload with
-                    # python youtube-upload-master/bin/youtube-upload
+                    upload_exe = r'C:\Users\sephi\github\upload_youtube\youtube-upload-master\bin\youtube-upload'
+                    args = ''.join([f'\'--{k}\', \'{v}\',' for k,v in meta_dict.items()])
+                    subprocess.run([upload_exe, args, _video])
+                    logger.debug(f'completed to load {_video}')
 
 
                 l = []
