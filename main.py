@@ -48,8 +48,9 @@ def create_youtube_metadata(video_tuple):
     meta_dict['publish-at'] = None
     meta_dict['recording-date'] = '2017'
     meta_dict['default-language'] = 'he'
+    meta_dict['default-audio-language']='he'
     meta_dict['thumbnail'] = video_tuple[0]
-    meta_dict['playlist'] = f''
+    meta_dict['playlist'] = f'פרשת {v[0].parts[-2]}'
 
     return meta_dict
 
@@ -84,7 +85,10 @@ def main():
                     continue
                 video_pair = [i for i in zip(ffjpg, ffmp3)]
                 for v in video_pair:
-                    create_youtube_metadata(v)
+                    meta_dict = create_youtube_metadata(v)
+                    # Run subprocess youtube_upload with
+                    # python youtube-upload-master/bin/youtube-upload
+
 
                 l = []
                 l.append(j)
