@@ -8,26 +8,32 @@ from logging.config import dictConfig
 audio_dir = 'data'  # Path where the videos are located
 extension_list = ('*.mp4', '*.flv')
 
-
 logging_config = dict(
-    version = 1,
-    formatters = {
+    version=1,
+    formatters={
         'f': {'format':
-              '%(asctime)s %(name)-12s %(levelname)-8s %(message)s'}
-        },
-    handlers = {
+                  '%(asctime)s %(name)-12s %(levelname)-8s %(message)s'}
+    },
+    handlers={
         'h': {'class': 'logging.StreamHandler',
               'formatter': 'f',
               'level': lg.DEBUG}
-        },
-    root = {
+    },
+    root={
         'handlers': ['h'],
         'level': lg.DEBUG,
-        },
+    },
 )
 
 dictConfig(logging_config)
 
+
+def convert_audio_file(audio_file: Path, audio_format: str = 'mp3'):
+    new_file = audio_file.parent / f'{audio_file.stem}.mp3'
+    if not new_file.exists():
+        logger.debug(f'try to convert {audio_file}')
+        AudioSegment.from_file(audio_file).export(new_file, format=audio_format)
+        logger.debug(f'convert {audio_file} to {new_file}')
 
 
 def main():
@@ -38,25 +44,33 @@ def main():
         file.unlink()
         logger.debug(f'removed file: {file}')
 
-    audio_wma_files =Path(audio_dir).rglob('*.WMA')
+    #convert audio files
+    audio_wma_files = Path(audio_dir).rglob('*.WMA')
     for audio_file in audio_wma_files:
-        new_file = audio_file.parent / f'{audio_file.stem}.mp3'
-        if not new_file.exists():
-            logger.debug(f'try to convert {audio_file}')
-            AudioSegment.from_file(audio_file).export(new_file, format='mp3')
-            logger.debug(f'convert {audio_file} to {new_file}')
+        convert_audio_file(audio_file, audio_format='mp3')
 
     # Get list of relevent files
-    ffjpg = sorted([f for f in p.iterdir() if (f.suffix in ['.jpg']) ])
-    ffjpg[-1], ffjpg[-2] = ffjpg[-2], ffjpg[-1]  #switch mavtir and haftara
-    ffmp3 = sorted([f for f in p.iterdir() if (f.suffix in ['.mp3']) ])
+    l = []
+    for i in Path(audio_dir):
+        l.append(i)
+        if len(l) > 1:
+            if l[-2].parent != l[-1].parent:
+                j = l.pop()
+                print(f'process: {len(l)}')
+                l = []
+                l.append(j)
+            else:
+                pass
+    ffjpg = sorted([f for f in p.iterdir() if (f.suffix in ['.jpg'])])
+    ffjpg[-1], ffjpg[-2] = ffjpg[-2], ffjpg[-1]  # switch mavtir and haftara
+    ffmp3 = sorted([f for f in p.iterdir() if (f.suffix in ['.mp3'])])
 
-    #create pairs
+    # create pairs
     video_pair = [i for i in zip(ffjpg, ffmp3)]
 
-        # for video in glob.glob(extension_list):
-        #     mp3_filename = os.path.splitext(os.path.basename(video))[0] + '.mp3'
-        #     AudioSegment.from_file(video).export(mp3_filename, format='mp3')
+    # for video in glob.glob(extension_list):
+    #     mp3_filename = os.path.splitext(os.path.basename(video))[0] + '.mp3'
+    #     AudioSegment.from_file(video).export(mp3_filename, format='mp3')
 
 
 if __name__ == '__main__':
