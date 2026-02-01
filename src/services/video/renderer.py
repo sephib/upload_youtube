@@ -3,7 +3,7 @@
 
 from pathlib import Path
 
-from moviepy.editor import (
+from moviepy import (
     AudioFileClip,
     ColorClip,
     CompositeVideoClip,
