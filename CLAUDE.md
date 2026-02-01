@@ -42,16 +42,6 @@ Commit messages must follow the conventional commits standard like so:
 Assisted-by: `<name-of-code-assistant>`  
 ```
 
-## Just Pre-Commit
-
-Run checks via _just p_ (changed files) or just pa (all files).
-
-- If unsure of current state or starting after manual edits,
-    run just p first to identify pre-existing issues.
-- You may proceed without just p if confident,
-    but stay vigilant for baseline errors.
-- Favor just commands over direct CLI execution.
-- If check failed. Iterate quickly to fix, run: pre-commit run <hook_id> --files <path> until the issue is resolved
 
 ## Code
 
@@ -98,27 +88,11 @@ logger.debug(f"user_id: {user_id}, status: {status}, count: {count}")  # BAD log
 - No prose in debug logs—just data
 - Reserve comments for *why*, not *what*
 
-## Edit Attempts
 
-Each sequence of edits and code generation without
-`just p` or `just pa` is an Edit Attempt.  
-Edit Attempts should be atomic, focused and encapsulated.  
+## Active Technologies
+- Python 3.13 + aeneas (forced alignment), moviepy (video rendering), httpx (Sefaria API client), pydub (audio conversion) (001-torah-audio-text-sync)
+- File-based (audio inputs, timestamp maps as JSON, video outputs) (001-torah-audio-text-sync)
+- Python 3.13 + aeneas (forced alignment), moviepy (video rendering), httpx (Sefaria API client), pydub (audio conversion), dynaconf (configuration) (001-torah-audio-text-sync)
 
-Before any Edit Attempt:
-
-- a descriptive line:
-
-  ```text
-  `[EDIT]` `<description>`: `STARTING`  
-  ```
-
-After any Edit Attempt:  
-
-- `just p` or `just pa` (to `git add .` & `pre-commit` in a single command)
-- a summary line:
-
-  ```text
-  `[EDIT]` `<description>`: `<status>`  
-  ```
-
-  where `<status>` is `SUCCESS` or `FAILED`
+## Recent Changes
+- 001-torah-audio-text-sync: Added Python 3.13 + aeneas (forced alignment), moviepy (video rendering), httpx (Sefaria API client), pydub (audio conversion)
