@@ -180,18 +180,19 @@
   
 ## Technology Stack Summary  
   
-| Component | Technology | Version/Notes |  
-|-----------|-----------|---------------|  
-| **Language** | Python | 3.13 |  
-| **Forced Alignment** | aeneas | Latest stable |  
-| **Video Rendering** | moviepy | Latest stable |  
-| **HTTP Client** | httpx | For Sefaria API |  
-| **Audio Processing** | pydub | For format conversion |  
-| **Font** | Frank Ruehl CLM / Taamey David CLM | Bundled |  
-| **Data Models** | Pydantic | For JSON validation |  
-| **Testing** | pytest | Per constitution |  
-| **Package Management** | UV | Per constitution |  
-| **Configuration** | dynaconf | Multi-layered config management |  
+| Component | Technology | Version/Notes |
+|-----------|-----------|---------------|
+| **Language** | Python | 3.13 |
+| **Forced Alignment** | aeneas | Latest stable |
+| **Video Rendering** | moviepy | Latest stable |
+| **HTTP Client** | httpx | For Sefaria API |
+| **Audio Processing** | pydub | For format conversion |
+| **Font** | Frank Ruehl CLM / Taamey David CLM | Bundled |
+| **Data Models** | Pydantic | For JSON validation |
+| **Testing** | pytest | Per constitution |
+| **Package Management** | UV | Per constitution |
+| **Configuration** | dynaconf | Multi-layered config management |
+| **Logging** | loguru | Structured logging with automatic JSON serialization |  
   
 ## Next Steps  
   

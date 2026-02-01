@@ -1,1 +1,62 @@
-data/
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Allow src/lib/ but exclude build lib/
+!src/lib/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+.virtualenvs/
+
+# UV
+.uv/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Project-specific
+data/cache/
+data/audio/
+output/
+*.log
+.secrets.toml
+tmp/
+
+# Temporary files
+*.tmp
+*.bak
+*.orig

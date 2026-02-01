@@ -19,16 +19,16 @@ This document provides a dependency-ordered, actionable task breakdown for imple
 
 ### Setup Tasks
 
-- [ ] T001 Create project directory structure per plan.md (src/, tests/, data/, output/, fonts/)
-- [ ] T002 Initialize pyproject.toml with Python 3.13 and core dependencies (aeneas, moviepy, httpx, pydub, dynaconf, pydantic, pytest)
-- [ ] T003 Create .gitignore excluding data/cache/, output/, .venv/, *.pyc, .secrets.toml
-- [ ] T004 Download and bundle Hebrew font (FrankRuhl-Regular.ttf) to fonts/ directory
-- [ ] T005 Create settings.toml with default configuration per research.md (video resolution, Sefaria URL, cache dirs)
-- [ ] T006 Create .secrets.toml.example template for sensitive configuration
-- [ ] T007 Set up pre-commit hooks configuration (.pre-commit-config.yaml) with ruff, mypy, pytest
-- [ ] T008 Create README.md with project overview and quickstart instructions
-- [ ] T009 Initialize UV virtual environment and verify all dependencies install correctly
-- [ ] T010 Create output directory structure (videos/, logs/, errors/, timestamp_maps/)
+- [x] T001 Create project directory structure per plan.md (src/, tests/, data/, output/, fonts/)
+- [x] T002 Initialize pyproject.toml with Python 3.13 and core dependencies (aeneas, moviepy, httpx, pydub, dynaconf, pydantic, pytest)
+- [x] T003 Create .gitignore excluding data/cache/, output/, .venv/, *.pyc, .secrets.toml
+- [x] T004 Download and bundle Hebrew font (FrankRuhl-Regular.ttf) to fonts/ directory
+- [x] T005 Create settings.toml with default configuration per research.md (video resolution, Sefaria URL, cache dirs)
+- [x] T006 Create .secrets.toml.example template for sensitive configuration
+- [x] T007 Set up pre-commit hooks configuration (.pre-commit-config.yaml) with ruff, mypy, pytest
+- [x] T008 Create README.md with project overview and quickstart instructions
+- [x] T009 Initialize UV virtual environment and verify all dependencies install correctly
+- [x] T010 Create output directory structure (videos/, logs/, errors/, timestamp_maps/)
 
 ## Phase 2: Foundational Components
 
@@ -37,19 +37,19 @@ This document provides a dependency-ordered, actionable task breakdown for imple
 
 ### Foundational Tasks
 
-- [ ] T011 [P] Create Pasuk (Verse) Pydantic model in src/models/pasuk.py with validation per data-model.md
-- [ ] T012 [P] Create VerseTimestamp embedded model in src/models/timestamp.py
-- [ ] T013 [P] Create TimestampMap Pydantic model in src/models/timestamp_map.py with monotonic timestamp validation
-- [ ] T014 [P] Create Aliyah Pydantic model in src/models/aliyah.py with state transitions enum
-- [ ] T015 [P] Create Parasha Pydantic model in src/models/parasha.py
-- [ ] T016 [P] Create HebrewTextSource protocol in src/models/hebrew_text_source.py
-- [ ] T017 [P] Create AudioSource model in src/models/audio_source.py
-- [ ] T018 [P] Create SynchronizedVideo model in src/models/video.py
-- [ ] T019 Create configuration loader in src/lib/config.py using dynaconf with environment variable support
-- [ ] T020 Create structured logging setup in src/lib/logging.py with JSON format support per research.md
-- [ ] T021 Create custom exception classes in src/lib/exceptions.py (HebrewTextUnavailableError, InvalidReferenceError, etc.)
-- [ ] T022 Create filename parser utility in src/lib/filename_parser.py to extract Parasha/Aliyah from Hebrew naming convention
-- [ ] T023 Create Hebrew text validator in src/lib/hebrew_validator.py to verify Unicode Nikkud (U+05B0-U+05BD) and T'amim (U+0591-U+05AF) presence
+- [x] T011 [P] Create Pasuk (Verse) Pydantic model in src/models/pasuk.py with validation per data-model.md
+- [x] T012 [P] Create VerseTimestamp embedded model in src/models/timestamp.py
+- [x] T013 [P] Create TimestampMap Pydantic model in src/models/timestamp_map.py with monotonic timestamp validation
+- [x] T014 [P] Create Aliyah Pydantic model in src/models/aliyah.py with state transitions enum
+- [x] T015 [P] Create Parasha Pydantic model in src/models/parasha.py
+- [x] T016 [P] Create HebrewTextSource protocol in src/models/hebrew_text_source.py
+- [x] T017 [P] Create AudioSource model in src/models/audio_source.py
+- [x] T018 [P] Create SynchronizedVideo model in src/models/video.py
+- [x] T019 Create configuration loader in src/lib/config.py using dynaconf with environment variable support
+- [x] T020 Create structured logging setup in src/lib/logging.py using loguru with automatic JSON serialization
+- [x] T021 Create custom exception classes in src/lib/exceptions.py (HebrewTextUnavailableError, InvalidReferenceError, etc.)
+- [x] T022 Create filename parser utility in src/lib/filename_parser.py to extract Parasha/Aliyah from Hebrew naming convention
+- [x] T023 Create Hebrew text validator in src/lib/hebrew_validator.py to verify Unicode Nikkud (U+05B0-U+05BD) and T'amim (U+0591-U+05AF) presence
 
 ## Phase 3: User Story 1 - View Synchronized Torah Reading Video (P1)
 

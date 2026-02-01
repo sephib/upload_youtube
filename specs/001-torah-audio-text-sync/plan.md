@@ -11,8 +11,8 @@ Create a system that synchronizes Hebrew text with Torah reading audio to genera
   
 ## Technical Context  
   
-**Language/Version**: Python 3.13  
-**Primary Dependencies**: aeneas (forced alignment), moviepy (video rendering), httpx (Sefaria API client), pydub (audio conversion), dynaconf (configuration)  
+**Language/Version**: Python 3.13
+**Primary Dependencies**: aeneas (forced alignment), moviepy (video rendering), httpx (Sefaria API client), pydub (audio conversion), dynaconf (configuration), loguru (logging)
 **Storage**: File-based (audio inputs, timestamp maps as JSON, video outputs)  
 **Testing**: pytest  
 **Target Platform**: Linux/macOS development environment, batch processing workstation  
