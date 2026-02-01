@@ -60,61 +60,61 @@ This document provides a dependency-ordered, actionable task breakdown for imple
 
 ### Audio Processing Module
 
-- [ ] T024 [US1] Create AudioFileReader class in src/services/audio/reader.py to load MP3/MP4/WAV files using pydub
-- [ ] T025 [US1] Implement audio format detection in src/services/audio/reader.py (validate file exists and is readable)
-- [ ] T026 [US1] Implement audio metadata extraction (duration, sample rate, channels) in src/services/audio/reader.py
-- [ ] T027 [US1] Create AudioConverter class in src/services/audio/converter.py to convert audio to 16kHz mono WAV per research.md
-- [ ] T028 [US1] Implement temporary file management in src/services/audio/converter.py for converted audio cleanup
+- [x] T024 [US1] Create AudioFileReader class in src/services/audio/reader.py to load MP3/MP4/WAV files using pydub
+- [x] T025 [US1] Implement audio format detection in src/services/audio/reader.py (validate file exists and is readable)
+- [x] T026 [US1] Implement audio metadata extraction (duration, sample rate, channels) in src/services/audio/reader.py
+- [x] T027 [US1] Create AudioConverter class in src/services/audio/converter.py to convert audio to 16kHz mono WAV per research.md
+- [x] T028 [US1] Implement temporary file management in src/services/audio/converter.py for converted audio cleanup
 
 ### Hebrew Text Retrieval Module
 
-- [ ] T029 [US1] Create SefariaClient class in src/services/text/sefaria_client.py with base URL configuration
-- [ ] T030 [US1] Implement get_verse() method in src/services/text/sefaria_client.py using httpx per contracts/sefaria-api.md
-- [ ] T031 [US1] Implement get_range() method in src/services/text/sefaria_client.py for multi-verse retrieval
-- [ ] T032 [US1] Implement retry logic with exponential backoff (3 attempts, 2s/4s/8s delays) in src/services/text/sefaria_client.py
-- [ ] T033 [US1] Implement Sefaria response validation in src/services/text/sefaria_client.py (check for Nikkud and T'amim using lib/hebrew_validator.py)
-- [ ] T034 [US1] Implement file-based caching in src/services/text/cache.py (save responses to data/cache/sefaria/{book}_{chapter}_{verse}.json)
-- [ ] T035 [US1] Implement error handling per FR-002a in src/services/text/sefaria_client.py (fail with clear message when API unavailable)
+- [x] T029 [US1] Create SefariaClient class in src/services/text/sefaria_client.py with base URL configuration
+- [x] T030 [US1] Implement get_verse() method in src/services/text/sefaria_client.py using httpx per contracts/sefaria-api.md
+- [x] T031 [US1] Implement get_range() method in src/services/text/sefaria_client.py for multi-verse retrieval
+- [x] T032 [US1] Implement retry logic with exponential backoff (3 attempts, 2s/4s/8s delays) in src/services/text/sefaria_client.py
+- [x] T033 [US1] Implement Sefaria response validation in src/services/text/sefaria_client.py (check for Nikkud and T'amim using lib/hebrew_validator.py)
+- [x] T034 [US1] Implement file-based caching in src/services/text/cache.py (save responses to data/cache/sefaria/{book}_{chapter}_{verse}.json)
+- [x] T035 [US1] Implement error handling per FR-002a in src/services/text/sefaria_client.py (fail with clear message when API unavailable)
 
 ### Forced Alignment Module
 
-- [ ] T036 [US1] Create AlignmentEngine class in src/services/alignment/engine.py wrapping aeneas library
-- [ ] T037 [US1] Implement prepare_text_for_alignment() in src/services/alignment/engine.py (format verses for aeneas input)
-- [ ] T038 [US1] Implement run_alignment() in src/services/alignment/engine.py to generate verse-level timestamps
-- [ ] T039 [US1] Implement alignment quality scoring in src/services/alignment/engine.py (calculate confidence score 0.0-1.0)
-- [ ] T040 [US1] Implement timestamp validation in src/services/alignment/engine.py (check monotonic increase, no gaps >5s, no overlaps)
-- [ ] T041 [US1] Implement TimestampMap serialization in src/services/alignment/engine.py (save to JSON per data-model.md)
-- [ ] T042 [US1] Implement alignment failure handling in src/services/alignment/engine.py (raise exception if confidence < 0.90)
+- [x] T036 [US1] Create AlignmentEngine class in src/services/alignment/engine.py wrapping aeneas library
+- [x] T037 [US1] Implement prepare_text_for_alignment() in src/services/alignment/engine.py (format verses for aeneas input)
+- [x] T038 [US1] Implement run_alignment() in src/services/alignment/engine.py to generate verse-level timestamps
+- [x] T039 [US1] Implement alignment quality scoring in src/services/alignment/engine.py (calculate confidence score 0.0-1.0)
+- [x] T040 [US1] Implement timestamp validation in src/services/alignment/engine.py (check monotonic increase, no gaps >5s, no overlaps)
+- [x] T041 [US1] Implement TimestampMap serialization in src/services/alignment/engine.py (save to JSON per data-model.md)
+- [x] T042 [US1] Implement alignment failure handling in src/services/alignment/engine.py (raise exception if confidence < 0.90)
 
 ### Video Rendering Module
 
-- [ ] T043 [US1] Create VideoRenderer class in src/services/video/renderer.py using moviepy
-- [ ] T044 [US1] Implement font loading in src/services/video/renderer.py (load FrankRuhl-Regular.ttf with size 18-24pt)
-- [ ] T045 [US1] Implement Hebrew text layout in src/services/video/renderer.py (calculate positions for multiple verses on screen)
-- [ ] T046 [US1] Implement verse highlighting logic in src/services/video/renderer.py (apply color/opacity changes based on timestamps)
-- [ ] T047 [US1] Implement scrolling animation in src/services/video/renderer.py (auto-scroll to keep highlighted verse centered)
-- [ ] T048 [US1] Implement video composition in src/services/video/renderer.py (combine audio track + text overlay at 30fps)
-- [ ] T049 [US1] Implement video encoding in src/services/video/renderer.py (MP4 with H.264 codec, 640x360 resolution, CRF 23)
-- [ ] T050 [US1] Implement output validation in src/services/video/renderer.py (verify resolution, duration, codec) - must be valid to upload to youtube
+- [x] T043 [US1] Create VideoRenderer class in src/services/video/renderer.py using moviepy
+- [x] T044 [US1] Implement font loading in src/services/video/renderer.py (load FrankRuhl-Regular.ttf with size 18-24pt)
+- [x] T045 [US1] Implement Hebrew text layout in src/services/video/renderer.py (calculate positions for multiple verses on screen)
+- [x] T046 [US1] Implement verse highlighting logic in src/services/video/renderer.py (apply color/opacity changes based on timestamps)
+- [x] T047 [US1] Implement scrolling animation in src/services/video/renderer.py (auto-scroll to keep highlighted verse centered)
+- [x] T048 [US1] Implement video composition in src/services/video/renderer.py (combine audio track + text overlay at 30fps)
+- [x] T049 [US1] Implement video encoding in src/services/video/renderer.py (MP4 with H.264 codec, 640x360 resolution, CRF 23)
+- [x] T050 [US1] Implement output validation in src/services/video/renderer.py (verify resolution, duration, codec) - must be valid to upload to youtube
 
 ### Pipeline Orchestration
 
-- [ ] T051 [US1] Create ProcessingPipeline class in src/services/pipeline.py to orchestrate all modules
-- [ ] T052 [US1] Implement process_single_aliyah() method in src/services/pipeline.py (parse filename → retrieve text → align → render)
-- [ ] T053 [US1] Implement progress logging in src/services/pipeline.py (log each pipeline stage with structured data)
-- [ ] T054 [US1] Implement error recovery in src/services/pipeline.py (cleanup temp files, log failures)
-- [ ] T055 [US1] Implement state tracking in src/services/pipeline.py (update Aliyah state: pending → aligning → aligned → rendering → completed/failed)
+- [x] T051 [US1] Create ProcessingPipeline class in src/services/pipeline.py to orchestrate all modules
+- [x] T052 [US1] Implement process_single_aliyah() method in src/services/pipeline.py (parse filename → retrieve text → align → render)
+- [x] T053 [US1] Implement progress logging in src/services/pipeline.py (log each pipeline stage with structured data)
+- [x] T054 [US1] Implement error recovery in src/services/pipeline.py (cleanup temp files, log failures)
+- [x] T055 [US1] Implement state tracking in src/services/pipeline.py (update Aliyah state: pending → aligning → aligned → rendering → completed/failed)
 
 ### CLI Interface (User Story 1 Subset)
 
-- [ ] T056 [US1] Create CLI entry point in src/cli/main.py using argparse or click
-- [ ] T057 [US1] Implement single file processing command in src/cli/main.py per contracts/cli-interface.md
-- [ ] T058 [US1] Implement argument parsing in src/cli/main.py (AUDIO_FILE, --output, --cache-dir, --font, --log-level)
-- [ ] T059 [US1] Implement filename validation in src/cli/main.py (reject files not matching Hebrew naming convention)
-- [ ] T060 [US1] Implement exit code handling in src/cli/main.py (0=success, 1-8=specific errors per contract)
-- [ ] T061 [US1] Implement stdout/stderr separation in src/cli/main.py (progress to stdout, errors to stderr)
-- [ ] T062 [US1] Wire CLI to ProcessingPipeline in src/cli/main.py
-- [ ] T063 [US1] Implement --help and --version flags in src/cli/main.py
+- [x] T056 [US1] Create CLI entry point in src/cli/main.py using argparse or click
+- [x] T057 [US1] Implement single file processing command in src/cli/main.py per contracts/cli-interface.md
+- [x] T058 [US1] Implement argument parsing in src/cli/main.py (AUDIO_FILE, --output, --cache-dir, --font, --log-level)
+- [x] T059 [US1] Implement filename validation in src/cli/main.py (reject files not matching Hebrew naming convention)
+- [x] T060 [US1] Implement exit code handling in src/cli/main.py (0=success, 1-8=specific errors per contract)
+- [x] T061 [US1] Implement stdout/stderr separation in src/cli/main.py (progress to stdout, errors to stderr)
+- [x] T062 [US1] Wire CLI to ProcessingPipeline in src/cli/main.py
+- [x] T063 [US1] Implement --help and --version flags in src/cli/main.py
 
 ### Integration Testing (User Story 1)
 
