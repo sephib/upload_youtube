@@ -19,6 +19,8 @@ logger = get_logger(__name__)
 try:
     from aeneas.executetask import ExecuteTask
     from aeneas.task import Task
+    from aeneas.textfile import TextFile
+    from aeneas.textfile import TextFileFormat
 
     AENEAS_AVAILABLE = True
 except ImportError:
@@ -158,28 +160,57 @@ class AlignmentEngine:
             # Create temporary text file for aeneas
             import tempfile
 
-            with tempfile.NamedTemporaryFile(
+            # Create temp file and keep it until after alignment
+            text_file = tempfile.NamedTemporaryFile(
                 mode="w", suffix=".txt", delete=False, encoding="utf-8"
-            ) as text_file:
-                text_file.write(sync_map_text)
-                text_file_path = text_file.name
+            )
+            text_file.write(sync_map_text)
+            text_file.flush()  # Ensure content is written to disk
+            text_file_path = text_file.name
+            text_file.close()  # Close but don't delete yet
 
-            # Configure aeneas task
-            config_string = "task_language=heb|is_text_type=plain|os_task_file_format=json"
+            try:
+                # Verify temp file exists and has content
+                temp_path = Path(text_file_path)
+                if not temp_path.exists():
+                    raise AlignmentError(f"Temp text file does not exist: {text_file_path}")
 
-            task = Task(config_string=config_string)
-            task.audio_file_path_absolute = str(audio_file)
-            task.text_file_path_absolute = text_file_path
+                file_size = temp_path.stat().st_size
+                logger.debug(f"{text_file_path=}, {file_size=} bytes")
 
-            # Execute alignment
-            logger.debug(f"Executing aeneas alignment")
-            ExecuteTask(task).execute()
+                # Configure aeneas task
+                # NOTE: espeak doesn't support Hebrew voices, so we use English as fallback
+                # The alignment still works because DTW compares audio features, not phonemes
+                # The TTS is only used to generate reference MFCC features
+                config_string = "task_language=eng|is_text_type=plain|os_task_file_format=json|tts=espeak"
 
-            # Get sync map
-            sync_map = task.sync_map
+                task = Task(config_string=config_string)
+                task.audio_file_path_absolute = str(audio_file)
+                task.text_file_path_absolute = str(text_file_path)
 
-            # Clean up temp file
-            Path(text_file_path).unlink()
+                # Create TextFile object explicitly
+                # Use English for TTS even though text is Hebrew (alignment will still work)
+                text_file_obj = TextFile(
+                    file_path=str(text_file_path),
+                    file_format=TextFileFormat.PLAIN
+                )
+                text_file_obj.set_language("eng")
+                task.text_file = text_file_obj
+
+                # Set sync map output path
+                task.sync_map_file_path_absolute = str(text_file_path).replace('.txt', '_syncmap.json')
+
+                # Execute alignment
+                logger.debug(f"{audio_file=}")
+                logger.debug(f"{task.text_file_path_absolute=}")
+                logger.debug(f"{task.audio_file_path_absolute=}")
+                ExecuteTask(task).execute()
+
+                # Get sync map
+                sync_map = task.sync_map
+            finally:
+                # Clean up temp file
+                Path(text_file_path).unlink(missing_ok=True)
 
             # Convert sync map to list of dicts
             fragments = []
@@ -196,6 +227,8 @@ class AlignmentEngine:
             return fragments
 
         except Exception as e:
+            import traceback
+            logger.error(f"Alignment exception details: {traceback.format_exc()}")
             raise AlignmentError(f"Forced alignment failed: {e}") from e
 
     def _calculate_confidence(self, alignment_data: list[dict[str, Any]]) -> float:
@@ -253,6 +286,7 @@ class AlignmentEngine:
             List of VerseTimestamp objects
         """
         verse_timestamps = []
+        prev_end_time = 0.0
 
         for i, fragment in enumerate(alignment_data):
             if i >= len(verses):
@@ -261,14 +295,37 @@ class AlignmentEngine:
 
             reference, _ = verses[i]
 
+            # Get raw timestamps from alignment
+            start_time = fragment["begin"]
+            end_time = fragment["end"]
+
+            # Ensure monotonic ordering: start_time must be >= prev_end_time
+            if start_time < prev_end_time:
+                logger.warning(
+                    f"Non-monotonic timestamp for {reference}: {start_time}s < {prev_end_time}s, "
+                    f"adjusting to {prev_end_time}s"
+                )
+                start_time = prev_end_time
+
+            # Ensure end_time > start_time (add minimum 0.1s duration if needed)
+            if end_time <= start_time:
+                logger.warning(
+                    f"Degenerate timestamp for {reference}: {start_time}s-{end_time}s, "
+                    f"adding minimum duration"
+                )
+                end_time = start_time + 0.1
+
             verse_timestamps.append(
                 VerseTimestamp(
                     reference=reference,
-                    start_time=fragment["begin"],
-                    end_time=fragment["end"],
+                    start_time=start_time,
+                    end_time=end_time,
                     confidence=confidence,  # Use overall confidence for now
                 )
             )
+
+            # Track end time for monotonic ordering
+            prev_end_time = end_time
 
         return verse_timestamps
 

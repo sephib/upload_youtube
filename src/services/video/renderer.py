@@ -3,6 +3,7 @@
 
 from pathlib import Path
 
+from bidi.algorithm import get_display
 from moviepy import (
     AudioFileClip,
     ColorClip,
@@ -61,6 +62,7 @@ class VideoRenderer:
         audio_file: Path,
         timestamp_map: TimestampMap,
         output_path: Path,
+        verses: list[tuple[str, str]] | None = None,
     ) -> SynchronizedVideo:
         """Render synchronized video with text overlay.
 
@@ -68,6 +70,7 @@ class VideoRenderer:
             audio_file: Path to audio file
             timestamp_map: TimestampMap with verse timestamps
             output_path: Output video file path
+            verses: Optional list of (reference, hebrew_text) tuples
 
         Returns:
             SynchronizedVideo model
@@ -93,12 +96,12 @@ class VideoRenderer:
             )  # Black background
 
             # Create text clips for each verse
-            text_clips = self._create_text_clips(timestamp_map)
+            text_clips = self._create_text_clips(timestamp_map, verses)
 
             # Composite video
             video = CompositeVideoClip([background] + text_clips)
-            video = video.set_audio(audio_clip)
-            video = video.set_fps(self.fps)
+            video = video.with_audio(audio_clip)
+            video = video.with_fps(self.fps)
 
             # Ensure output directory exists
             output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -144,11 +147,14 @@ class VideoRenderer:
         except Exception as e:
             raise VideoRenderError(f"Video rendering failed: {e}") from e
 
-    def _create_text_clips(self, timestamp_map: TimestampMap) -> list:
+    def _create_text_clips(
+        self, timestamp_map: TimestampMap, verses: list[tuple[str, str]] | None = None
+    ) -> list:
         """Create text clips for each verse with highlighting.
 
         Args:
             timestamp_map: TimestampMap with verse timestamps
+            verses: Optional list of (reference, hebrew_text) tuples
 
         Returns:
             List of TextClip objects
@@ -156,50 +162,43 @@ class VideoRenderer:
         text_clips = []
         width, height = self.resolution
 
+        # Create verse lookup dict from verses list
+        verse_dict = {}
+        if verses:
+            verse_dict = {ref: text for ref, text in verses}
+
         # Calculate vertical spacing
         max_visible_verses = 10
         line_height = height // (max_visible_verses + 2)
         y_start = line_height
 
         for i, verse_ts in enumerate(timestamp_map.verse_timestamps):
-            # Get verse text (we need to fetch it - simplified for now)
-            verse_text = f"{verse_ts.reference}"  # Placeholder - should have Hebrew text
+            # Get Hebrew text or fall back to reference
+            verse_text = verse_dict.get(verse_ts.reference, verse_ts.reference)
+
+            # Apply bidirectional text reordering for Hebrew RTL display
+            # The bidi algorithm properly reorders Hebrew text (RTL) with diacritics for visual display
+            # This converts logical order (storage) to visual order (display)
+            if verse_text and not verse_text.startswith("Deuteronomy"):
+                verse_text = get_display(verse_text)
 
             # Calculate y position (scroll effect)
             y_position = y_start + (i * line_height)
 
-            # Create highlighted clip (during verse)
+            # Create highlighted clip (gold) during the verse being read
             highlighted_clip = (
                 TextClip(
-                    verse_text,
-                    fontsize=self.font_size,
+                    text=verse_text,
+                    font_size=self.font_size,
                     color=self.highlight_color,
                     font=str(self.font_path),
-                    method="caption",
+                    method="label",
                     size=(width - 40, None),
                 )
-                .set_position(("center", y_position))
-                .set_start(verse_ts.start_time)
-                .set_duration(verse_ts.duration)
+                .with_position(("center", y_position))
+                .with_start(verse_ts.start_time)
+                .with_duration(verse_ts.duration)
             )
-
             text_clips.append(highlighted_clip)
-
-            # Create normal clip (before verse starts)
-            if i == 0 or verse_ts.start_time > 0:
-                normal_clip = (
-                    TextClip(
-                        verse_text,
-                        fontsize=self.font_size,
-                        color=self.normal_color,
-                        font=str(self.font_path),
-                        method="caption",
-                        size=(width - 40, None),
-                    )
-                    .set_position(("center", y_position))
-                    .set_start(0)
-                    .set_duration(verse_ts.start_time)
-                )
-                text_clips.append(normal_clip)
 
         return text_clips

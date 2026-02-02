@@ -79,6 +79,10 @@ class SefariaClient:
         if isinstance(hebrew_text, list):
             hebrew_text = hebrew_text[0] if hebrew_text else ""
 
+        # Clean HTML entities from text
+        import html
+        hebrew_text = html.unescape(hebrew_text)
+
         logger.info(f"Retrieved verse", reference=reference, text_length=len(hebrew_text))
         return hebrew_text
 

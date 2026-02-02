@@ -14,19 +14,30 @@ Torah Sync generates synchronized videos from Torah reading audio files, where H
 
 - Python 3.13+
 - UV package manager
-- FFmpeg (system dependency)
+- System dependencies (macOS): `brew install espeak ffmpeg`
 
 ### Installation
 
 ```bash
-# Install dependencies
+# Install Python dependencies
 uv sync
+
+# Install aeneas (forced alignment) from patched fork with Python 3.13 support
+git clone -b py312_support https://github.com/avinashvarna/aeneas.git /tmp/aeneas
+cd /tmp/aeneas && sed -i '' '38,54s/^/#/' setup.py && sed -i '' '61s/^/#/' setup.py
+LDFLAGS="-L/opt/homebrew/opt/espeak/lib" CPPFLAGS="-I/opt/homebrew/opt/espeak/include" uv pip install /tmp/aeneas
+cd -
+
+# Verify aeneas installation
+uv run python -m aeneas.diagnostics
 
 # Download Hebrew font
 mkdir -p fonts
 curl -L "https://github.com/google/fonts/raw/main/ofl/frankruhl/FrankRuhl-Regular.ttf" \
   -o fonts/FrankRuhl-Regular.ttf
 ```
+
+> **Note**: aeneas requires manual installation because it has undeclared build-time dependencies on numpy. The patched fork from [avinashvarna/aeneas](https://github.com/avinashvarna/aeneas/tree/py312_support) adds Python 3.12+ support (see [PR #317](https://github.com/readbeyond/aeneas/pull/317)). The sed commands disable the Festival TTS extension which requires additional dependencies.
 
 ### Basic Usage
 

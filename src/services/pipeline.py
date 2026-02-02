@@ -101,11 +101,29 @@ class ProcessingPipeline:
                     # Add more verses...
                 ]
 
-                if parasha_name == "האזינו" and aliyah_name == "ראשון":
-                    # Fetch real verses for Haazinu Rishon (Deut 32:1-6)
+                # Determine verse range based on aliyah
+                verse_range = None
+                if parasha_name == "האזינו":
+                    if aliyah_name == "ראשון":
+                        verse_range = (1, 7)  # Verses 1-6
+                    elif aliyah_name == "שני":
+                        verse_range = (7, 13)  # Verses 7-12
+                    elif aliyah_name == "שלישי":
+                        verse_range = (13, 19)  # Verses 13-18
+                    elif aliyah_name == "רביעי":
+                        verse_range = (19, 29)  # Verses 19-28
+                    elif aliyah_name == "חמישי":
+                        verse_range = (29, 40)  # Verses 29-39
+                    elif aliyah_name == "שישי":
+                        verse_range = (40, 44)  # Verses 40-43
+                    elif aliyah_name == "שביעי":
+                        verse_range = (44, 53)  # Verses 44-52
+
+                if verse_range:
+                    # Fetch verses from Sefaria
                     try:
                         verses = []
-                        for verse_num in range(1, 7):  # Verses 1-6
+                        for verse_num in range(verse_range[0], verse_range[1]):
                             hebrew_text = self.text_client.get_verse("Deuteronomy", 32, verse_num)
                             ref = f"Deuteronomy 32:{verse_num}"
                             verses.append((ref, hebrew_text))
@@ -141,7 +159,9 @@ class ProcessingPipeline:
                 output_dir = output_dir or get_output_dir()
                 output_path = output_dir / f"{parasha_name}_{aliyah_name}_sync.mp4"
 
-                video = self.video_renderer.render(audio_file, timestamp_map, output_path)
+                video = self.video_renderer.render(
+                    audio_file, timestamp_map, output_path, verses=verses
+                )
 
                 current_state = AliyahState.COMPLETED
                 logger.info(

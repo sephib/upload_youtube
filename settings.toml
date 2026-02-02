@@ -8,7 +8,7 @@ output_dir = "output/videos"
 log_dir = "output/logs"
 error_dir = "output/errors"
 timestamp_map_dir = "data/timestamp_maps"
-font_path = "fonts/FrankRuhl-Regular.ttf"
+font_path = "/System/Library/Fonts/ArialHB.ttc"  # Arial Hebrew font
 log_level = "INFO"
 parallel_workers = 1
 

@@ -45,13 +45,19 @@ def get_log_dir() -> Path:
     return log_dir
 
 
-def get_font_path() -> Path:
-    """Get Hebrew font file path."""
-    font_path = Path(settings.font_path)
-    if not font_path.exists():
-        raise FileNotFoundError(
-            f"Hebrew font not found at {font_path}. "
-            "Download with: curl -L 'https://github.com/google/fonts/raw/main/ofl/frankruhl/FrankRuhl-Regular.ttf' "
-            f"-o {font_path}"
-        )
+def get_font_path() -> str:
+    """Get Hebrew font name or path.
+
+    Returns font name (for system fonts) or path to font file.
+    MoviePy will search for system fonts automatically.
+    """
+    font_path = settings.font_path
+
+    # If it's a path that exists, return it as absolute path
+    path_obj = Path(font_path)
+    if path_obj.exists():
+        return str(path_obj.absolute())
+
+    # Otherwise, assume it's a system font name (e.g., "Arial")
+    # MoviePy will find it automatically
     return font_path

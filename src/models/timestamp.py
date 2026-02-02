@@ -16,7 +16,7 @@ class VerseTimestamp(BaseModel):
 
     reference: str = Field(..., min_length=1, description="Canonical verse reference")
     start_time: float = Field(..., ge=0.0, description="Start time in audio (seconds)")
-    end_time: float = Field(..., gt=0.0, description="End time in audio (seconds)")
+    end_time: float = Field(..., ge=0.0, description="End time in audio (seconds)")
     confidence: float = Field(
         ..., ge=0.0, le=1.0, description="Alignment confidence score (0.0-1.0)"
     )
