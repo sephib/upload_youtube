@@ -96,7 +96,7 @@ class AlignmentEngine:
 
         # Calculate quality score
         confidence = self._calculate_confidence(alignment_data)
-        logger.info(f"Alignment complete", confidence=confidence)
+        logger.info(f"Alignment complete {confidence=}")
 
         # Validate timestamps
         verse_timestamps = self._parse_alignment_results(alignment_data, verses, confidence)

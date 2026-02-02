@@ -12,8 +12,11 @@ from src.lib.filename_parser import validate_audio_file
 from src.lib.logging import get_logger, setup_logging
 
 # Setup logging before any other imports
+from src.lib.config import get_log_dir
+
 setup_logging(
     log_level=settings.get("log_level", "INFO"),
+    log_file=get_log_dir() / "torah-sync.log",
     use_json=False,  # Human-readable for CLI
 )
 
@@ -75,7 +78,7 @@ def process(
         torah-sync process "data/audio/פרשת האזינו - ראשון - נוסח אשכנז.mp4"
     """
     # Update log level
-    setup_logging(log_level=log_level, use_json=False)
+    setup_logging(log_level=log_level, log_file=get_log_dir() / "torah-sync.log", use_json=False)
 
     logger.info(f"Processing audio file", audio_file=str(audio_file))
 
@@ -143,7 +146,7 @@ def batch(
 
         torah-sync batch data/audio/ --parallel 4
     """
-    setup_logging(log_level=log_level, use_json=False)
+    setup_logging(log_level=log_level, log_file=get_log_dir() / "torah-sync.log", use_json=False)
 
     logger.info(f"Batch processing directory", audio_dir=str(audio_dir), parallel=parallel)
 

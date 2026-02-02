@@ -66,18 +66,25 @@ class SefariaClient:
         reference = f"{book}.{chapter}.{verse}"
         logger.debug(f"Fetching verse: {reference}")
 
-        response = self._make_request(f"/texts/{reference}")
+        # Use API v3 endpoint which properly returns individual verses
+        response = self._make_request(f"/v3/texts/{reference}")
+
+        # V3 API returns versions array with text field
+        if "versions" not in response or not response["versions"]:
+            raise HebrewTextUnavailableError(
+                f"No versions available for {reference}"
+            )
+
+        # Get the first version's text
+        hebrew_text = response["versions"][0].get("text", "")
 
         # Validate response has Hebrew text with diacritics
-        if not validate_sefaria_response(response):
+        # Create a minimal v2-like response for validation
+        validation_response = {"he": [hebrew_text] if hebrew_text else []}
+        if not validate_sefaria_response(validation_response):
             raise HebrewTextUnavailableError(
                 f"Hebrew text incomplete: Missing vowels or cantillation marks for {reference}"
             )
-
-        # Extract Hebrew text
-        hebrew_text = response["he"]
-        if isinstance(hebrew_text, list):
-            hebrew_text = hebrew_text[0] if hebrew_text else ""
 
         # Clean HTML entities from text
         import html
