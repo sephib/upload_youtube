@@ -288,9 +288,14 @@ class AlignmentEngine:
         verse_timestamps = []
         prev_end_time = 0.0
 
+        # Log fragment vs verse count for debugging
+        logger.info(
+            f"Alignment fragment analysis: {len(alignment_data)} fragments for {len(verses)} text entries"
+        )
+
         for i, fragment in enumerate(alignment_data):
             if i >= len(verses):
-                logger.warning(f"More fragments than verses - truncating")
+                logger.warning(f"More fragments ({len(alignment_data)}) than text entries ({len(verses)}) - truncating")
                 break
 
             reference, _ = verses[i]

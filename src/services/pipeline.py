@@ -123,11 +123,14 @@ class ProcessingPipeline:
                     # Fetch verses from Sefaria
                     try:
                         verses = []
+                        # Add intro placeholder - aeneas often detects an intro before first verse
+                        verses.append((f"{parasha_name} - {aliyah_name} (Intro)", f"פרשת {parasha_name} - {aliyah_name}"))
+
                         for verse_num in range(verse_range[0], verse_range[1]):
                             hebrew_text = self.text_client.get_verse("Deuteronomy", 32, verse_num)
                             ref = f"Deuteronomy 32:{verse_num}"
                             verses.append((ref, hebrew_text))
-                        logger.info(f"Retrieved {len(verses)} verses from Sefaria")
+                        logger.info(f"Retrieved {len(verses)} verses from Sefaria (+ intro)")
                     except Exception as e:
                         logger.warning(f"Failed to fetch verses, using placeholder: {e}")
                         # Use placeholder if API fails
@@ -138,11 +141,29 @@ class ProcessingPipeline:
                 timestamp_map = self.alignment_engine.align(
                     wav_path, verses, parasha_name, aliyah_name
                 )
+                # Log detailed aliyah information
                 logger.info(
                     f"Alignment complete",
                     quality=timestamp_map.alignment_quality,
                     verse_count=timestamp_map.verse_count,
                 )
+                logger.info(
+                    f"Aliyah Details",
+                    parasha=parasha_name,
+                    aliyah=aliyah_name,
+                    audio_duration=audio_source.duration_seconds,
+                    verse_count=len(verses),
+                    first_verse=verses[0][0] if verses else None,
+                    last_verse=verses[-1][0] if verses else None,
+                )
+                for i, verse_ts in enumerate(timestamp_map.verse_timestamps, 1):
+                    logger.info(
+                        f"Verse {i}",
+                        reference=verse_ts.reference,
+                        start=f"{verse_ts.start_time:.2f}s",
+                        end=f"{verse_ts.end_time:.2f}s",
+                        duration=f"{verse_ts.duration:.2f}s",
+                    )
 
                 # Save timestamp map
                 timestamp_dir = get_cache_dir() / "timestamp_maps"
