@@ -1,5 +1,14 @@
 # Edited by Claude Code
-"""Hebrew text rendering using PIL for static image generation."""
+"""Hebrew text rendering using PIL for static image generation.
+
+Renders Hebrew text with vowel points (nikkud) and cantillation marks (te'amim)
+using PIL's built-in text rendering with python-bidi for RTL text direction.
+
+Note: PIL has limitations with complex Unicode combining characters - some
+advanced diacritics may render as box characters. This is a known limitation
+of PIL/Pillow's text rendering engine and cannot be resolved without switching
+to a different rendering stack (e.g., Cairo, Pango).
+"""
 
 from pathlib import Path
 
@@ -18,25 +27,43 @@ def render_hebrew_text_image_simple(
     font_path: str,
     font_size: int,
 ) -> Image.Image:
-    """Render Hebrew verses using PIL directly to a static image.
+    """Render Hebrew verses with diacritics to a static image.
 
-    Creates a single static image with all verses displayed at once.
-    Each verse has its number at the BEGINNING (left side visually for RTL).
-    Long verses wrap to multiple lines.
+    Creates a single static image with all verses displayed at once on a black background.
+    Handles right-to-left text direction, verse numbering, and automatic text wrapping.
+
+    Features:
+    - RTL text rendering using python-bidi for proper Hebrew text direction
+    - Verse numbers in parentheses: (1) verse text, (2) verse text, etc.
+    - Manual word wrapping to prevent text cutoff at image boundaries
+    - Right-aligned multiline text layout
+    - Support for Hebrew vowel points (nikkud) and cantillation marks (te'amim)
+
+    Known Limitations:
+    - Some complex Unicode combining characters may render as box characters (□)
+      due to PIL/Pillow's text rendering limitations. This is a known issue that
+      cannot be resolved without switching to Cairo/Pango rendering.
 
     Args:
-        verses: List of (reference, hebrew_text) tuples
+        verses: List of (reference, hebrew_text) tuples.
+                Reference format: "Book Chapter:Verse" or "Section - Intro"
+                Example: [("Deuteronomy 32:1", "הַאֲזִ֥ינוּ הַשָּׁמַ֖יִם וַאֲדַבֵּ֑רָה")]
         width: Image width in pixels
         height: Image height in pixels
-        font_path: Path to TrueType/OpenType font file
+        font_path: Path to TrueType/OpenType font file (recommended: Arial Hebrew)
         font_size: Font size in points
 
     Returns:
-        PIL Image with rendered Hebrew text
+        PIL Image object with rendered Hebrew text on black background
 
     Example:
-        >>> verses = [("Deuteronomy 32:1", "הַאֲזִ֥ינוּ הַשָּׁמַ֖יִם")]
-        >>> image = render_hebrew_text_image_simple(verses, 640, 360, "font.ttf", 20)
+        >>> verses = [
+        ...     ("Deuteronomy 32:1", "הַאֲזִ֥ינוּ הַשָּׁמַ֖יִם וַאֲדַבֵּ֑רָה"),
+        ...     ("Deuteronomy 32:2", "יַעֲרֹ֤ף כַּמָּטָר֙ לִקְחִ֔י")
+        ... ]
+        >>> image = render_hebrew_text_image_simple(
+        ...     verses, 640, 360, "/System/Library/Fonts/ArialHB.ttc", 20
+        ... )
         >>> image.save("output.png")
     """
     logger.debug(f"Rendering {len(verses)} verses to static image: {width}x{height}px, {font_size}pt")

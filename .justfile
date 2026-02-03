@@ -60,8 +60,8 @@ sync-json file:
 
 # Process sample files (Haazinu Rishon and Sheni)
 sample:
-    uv run torah-sync "data/audio/פרשת האזינו - ראשון - נוסח אשכנז.mp4"
-    uv run torah-sync "data/audio/פרשת האזינו - שני - נוסח אשכנז.mp4"
+    uv run torah-sync process "data/audio/פרשת האזינו - ראשון - נוסח אשכנז.mp4"
+    uv run torah-sync process "data/audio/פרשת האזינו - שני - נוסח אשכנז.mp4"
 
 # Testing
 # =======
