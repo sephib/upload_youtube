@@ -118,10 +118,10 @@ This document provides a dependency-ordered, actionable task breakdown for imple
 
 ### Integration Testing (User Story 1)
 
-- [ ] T064 [US1] Create end-to-end integration test in tests/integration/test_us1_pipeline.py (process sample Haazinu Rishon audio file)
-- [ ] T065 [US1] Verify test output video in tests/integration/test_us1_pipeline.py (check resolution 640x360, MP4 format, duration matches audio)
-- [ ] T066 [US1] Verify verse highlighting timing in tests/integration/test_us1_pipeline.py (sample timestamp checks within 0.5s accuracy)
-- [ ] T067 [US1] Verify Hebrew text readability in tests/integration/test_us1_pipeline.py (diacritical marks visible in rendered frames)
+- [x] T064 [US1] Create end-to-end integration test in tests/integration/test_us1_pipeline.py (process sample Haazinu Rishon audio file)
+- [x] T065 [US1] Verify test output video in tests/integration/test_us1_pipeline.py (check resolution 640x360, MP4 format, duration matches audio)
+- [x] T066 [US1] Verify verse highlighting timing in tests/integration/test_us1_pipeline.py (sample timestamp checks within 0.5s accuracy)
+- [x] T067 [US1] Verify Hebrew text readability in tests/integration/test_us1_pipeline.py (diacritical marks visible in rendered frames)
 
 ## Phase 4: User Story 2 - Identify Context Within Torah Portion (P2)
 

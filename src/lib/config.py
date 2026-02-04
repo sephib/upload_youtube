@@ -45,6 +45,13 @@ def get_log_dir() -> Path:
     return log_dir
 
 
+def get_timestamp_map_dir() -> Path:
+    """Get timestamp map directory path, creating it if needed."""
+    timestamp_dir = Path(settings.get("timestamp_map_dir", "data/timestamp_maps"))
+    timestamp_dir.mkdir(parents=True, exist_ok=True)
+    return timestamp_dir
+
+
 def get_font_path() -> str:
     """Get Hebrew font name or path.
 
