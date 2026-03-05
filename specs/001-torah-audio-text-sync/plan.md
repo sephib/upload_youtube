@@ -95,22 +95,111 @@ specs/001-torah-audio-text-sync/
 ```text  
 src/  
 ├── models/              # Data models (Parasha, Aliyah, Pasuk, TimestampMap, etc.)  
-├── services/            # Core processing services  
-│   ├── audio/          # Audio file parsing and validation (pydub)  
-│   ├── text/           # Hebrew text retrieval (httpx + Sefaria API)  
-│   ├── alignment/      # Forced alignment engine (aeneas)  
+├── services/            # Core processing services
+│   ├── audio/          # Audio file parsing and validation (pydub)
+│   ├── text/           # Hebrew text retrieval (httpx + Sefaria API)
+│   │   ├── sefaria_client.py      # Low-level Sefaria API wrapper
+│   │   ├── cache.py                # Caching layer for API responses
+│   │   ├── parasha_fetcher.py     # Batch text fetcher (NEW)
+│   │   └── hebrew_renderer.py     # Text rendering utilities
+│   ├── alignment/      # Forced alignment engine (aeneas)
 │   └── video/          # Video rendering with text overlay (moviepy)  
-├── cli/                # CLI entry points for batch processing  
-└── lib/                # Shared utilities (logging, file I/O, validation)  
-  
+├── cli/                # CLI entry points for batch processing
+└── lib/                # Shared utilities (logging, file I/O, validation)
+
+data/
+├── aliyah_ranges.toml  # Aliyah verse range configuration (NEW)
+├── audio/              # Input audio files
+└── cache/              # Cached API responses and timestamp maps
+
 tests/  
 ├── contract/           # API contract tests (Sefaria API, CLI interface)  
 ├── integration/        # Integration tests (end-to-end pipeline)  
 └── unit/               # Unit tests for individual modules  
 ```  
   
-**Structure Decision**: Single project structure selected. This is a batch processing pipeline with CLI interface, not a web or mobile application. All components are tightly integrated around the video generation workflow, so a monolithic structure with modular internal organization is appropriate. The library-first principle is satisfied through clear module boundaries within src/services/.  
-  
+**Structure Decision**: Single project structure selected. This is a batch processing pipeline with CLI interface, not a web or mobile application. All components are tightly integrated around the video generation workflow, so a monolithic structure with modular internal organization is appropriate. The library-first principle is satisfied through clear module boundaries within src/services/.
+
+## Text Fetching Architecture Details
+
+### Module Breakdown: `src/services/text/`
+
+**Purpose**: Retrieve Hebrew text with vowels and cantillation marks from Sefaria API, optimized for batch processing.
+
+**Components**:
+
+1. **`sefaria_client.py`** (Existing)
+   - Low-level HTTP client for Sefaria API v3
+   - Implements `get_verse()` and `get_range()` per API contract
+   - Handles retries, rate limiting, error responses
+   - Protocol: `HebrewTextSource`
+
+2. **`cache.py`** (Existing)
+   - File-based caching of Sefaria responses
+   - Cache location: `data/cache/sefaria/{book}_{chapter}_{verse}.json`
+   - Wraps `SefariaClient` as `CachedSefariaClient`
+
+3. **`parasha_fetcher.py`** (NEW - Phase 2 Enhancement)
+   - Aliyah-aware batch text fetcher
+   - Loads verse ranges from `data/aliyah_ranges.toml`
+   - Maps (Parasha name, Aliyah name) → (book, chapter range, verse range)
+   - Calls `SefariaClient.get_range()` for entire Aliyah
+   - Returns structured list of (reference, hebrew_text) tuples
+   - Reduces API calls by 86-97% vs. per-verse retrieval
+
+4. **`hebrew_renderer.py`** (Existing)
+   - Hebrew text rendering utilities
+   - BiDi text handling, font rendering
+   - Not related to fetching (separate concern)
+
+**Dependencies**:
+```text
+ProcessingPipeline
+    │
+    ├─> ParashaTextFetcher (composition)
+    │       │
+    │       ├─> AliyahRange config (loads from TOML)
+    │       └─> CachedSefariaClient (composition)
+    │               │
+    │               └─> SefariaClient (composition)
+    │
+    └─> (fallback) CachedSefariaClient (direct usage for testing)
+```
+
+**Configuration File**: `data/aliyah_ranges.toml`
+
+**Format**:
+```toml
+# Format: [parasha_name_normalized.aliyah_name_normalized]
+# Normalization: Hebrew names in lowercase, spaces removed
+
+[haazinu.rishon]
+book = "Deuteronomy"
+chapter_start = 32
+verse_start = 1
+chapter_end = 32
+verse_end = 6
+
+[haazinu.sheni]
+book = "Deuteronomy"
+chapter_start = 32
+verse_start = 7
+chapter_end = 32
+verse_end = 12
+
+# Total entries: ~300 (54 Parashot × ~7 Aliyot each)
+```
+
+**Implementation Priority**:
+- **MVP (Phase 1)**: Use `CachedSefariaClient` directly (per-verse or manual range)
+- **Phase 2 Enhancement**: Add `ParashaTextFetcher` for production optimization
+- **Phase 3**: Populate `aliyah_ranges.toml` for all 54 Torah Parashot
+
+**Performance Targets**:
+- Single Aliyah text fetch: <1 second (batch) vs. 5-10 seconds (per-verse)
+- API call reduction: 80-97% (target PR-003 from spec)
+- Cache hit rate: >95% for re-processing same Parashot
+
 ## Complexity Tracking  
   
 > **Fill ONLY if Constitution Check has violations that must be justified**  

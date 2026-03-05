@@ -80,7 +80,7 @@ A content creator wants to generate synchronized videos for all Torah portions (
 ### Functional Requirements  
   
 - **FR-001**: System MUST accept audio input files in common formats (MP4, MP3, WAV) following a standardized naming convention that identifies the Parasha and Aliyah (e.g., "פרשת האזינו - ראשון - נוסח אשכנז.mp4", "פרשת בראשית - שני - נוסח אשכנז.mp3")  
-- **FR-002**: System MUST retrieve Hebrew text with vowels (Nikkud) and cantillation marks (T'amim) for any specified Torah portion  
+- **FR-002**: System MUST retrieve Hebrew text with vowels (Nikkud) and cantillation marks (T'amim) for any specified Torah portion using batch retrieval strategies to minimize API requests  
 - **FR-002a**: System MUST fail processing with a clear error message when Hebrew text source is unavailable or returns incomplete data, logging the failure for retry  
 - **FR-003**: System MUST synchronize Hebrew text to audio at the verse (Pasuk) level, identifying start and end timestamps for each verse  
 - **FR-004**: System MUST generate video output in MP4 format at 360p (640x360) resolution where the current verse is visually highlighted as it is being read  
@@ -91,12 +91,19 @@ A content creator wants to generate synchronized videos for all Torah portions (
 - **FR-008**: System MUST process audio files that correspond to individual Aliyot (one Aliyah per audio file)  
 - **FR-010**: System MUST use legally permissible Hebrew text sources (open-source or appropriately licensed)  
 - **FR-011**: System MUST preserve attribution to the original audio source (Yoseph Joseph Bodenhaimer recordings)  
-- **FR-012**: System MUST handle Torah portions from the complete Hebrew Bible (all Parashot)  
-  
+- **FR-012**: System MUST handle Torah portions from the complete Hebrew Bible (all Parashot)
+
+### Performance Requirements
+
+- **PR-001**: System SHOULD minimize API requests to Hebrew text sources through batch retrieval strategies
+- **PR-002**: System SHOULD fetch entire Aliyah verse ranges in a single API request rather than per-verse requests
+- **PR-003**: System SHOULD reduce API calls by at least 80% compared to naive per-verse retrieval
+
 ### Key Entities  
   
 - **Parasha**: A weekly Torah portion (e.g., "Haazinu", "Bereshit"). Contains multiple Aliyot. Identified by name and book/chapter/verse range.  
-- **Aliyah**: A subdivision of a Parasha, traditionally one of seven sections (Rishon, Sheni, Shlishi, Revi'i, Chamishi, Shishi, Shevi'i). Contains multiple verses. Associated with one audio file.  
+- **Aliyah**: A subdivision of a Parasha, traditionally one of seven sections (Rishon, Sheni, Shlishi, Revi'i, Chamishi, Shishi, Shevi'i). Contains multiple verses. Associated with one audio file.
+- **AliyahRange**: Configuration mapping each Parasha/Aliyah combination to its verse range (book, chapter_start, verse_start, chapter_end, verse_end). Stored in `data/aliyah_ranges.toml`. Used by batch text fetchers to retrieve all verses for an Aliyah in a single API request.
 - **Pasuk (Verse)**: The atomic unit of synchronization. A single verse of Hebrew text with vowels and cantillation marks. Has a start timestamp and end timestamp within an audio file.  
 - **Haftara**: A weekly Nevieim portion that is Identified by name and book/chapter/verse range.  
 - **Audio Source**: A recording file (MP4/MP3/WAV) containing the recitation of one Aliyah. Sourced from Yoseph Joseph Bodenhaimer's recordings. Must follow standardized naming convention: "פרשת {Parasha} - {Aliyah} - נוסח אשכנז.{extension}" (e.g., "פרשת האזינו - ראשון - נוסח אשכנז.mp4").  
@@ -133,7 +140,8 @@ A content creator wants to generate synchronized videos for all Torah portions (
   
 - Access to Yoseph Joseph Bodenhaimer's Torah reading recordings (via YouTube download or direct source)  
 - Access to open-source Hebrew text database with vowels and cantillation marks (e.g., Sefaria API)  
-- Audio-to-text forced alignment capability for Hebrew language  
+- Audio-to-text forced alignment capability for Hebrew language
+- Aliyah verse range configuration (mapping Parasha/Aliyah to biblical references)
 - Video rendering capability for text overlay and highlighting effects  
   
 ## Scope  

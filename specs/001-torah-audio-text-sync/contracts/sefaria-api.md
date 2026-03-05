@@ -124,9 +124,96 @@ GET /api/texts/Deuteronomy.32.1-Deuteronomy.32.5
     "שִׁחֵ֥ת ל֛וֹ לֹ֖א בָּנָ֣יו מוּמָ֑ם דּ֥וֹר עִקֵּ֖שׁ וּפְתַלְתֹּֽל׃"  
   ],  
   "versionTitle": "Miqra according to the Masorah"  
-}  
-```  
-  
+}
+```
+
+## Batch Retrieval Strategy
+
+### Performance Optimization
+
+**Problem**: Per-verse retrieval for a typical Aliyah (e.g., 6 verses in Haazinu Rishon) requires 6 separate API calls, resulting in slow processing and unnecessary API load.
+
+**Solution**: Batch-fetch entire Aliyah ranges using the range endpoint to minimize API requests.
+
+### Example: Haazinu Rishon
+
+**Naive Approach (Per-Verse)**:
+```python
+# 6 separate API calls for Haazinu Rishon
+for verse in range(1, 7):
+    text = client.get_verse("Deuteronomy", 32, verse)
+# Result: 6 API calls, ~1.2 seconds (6 × 100ms delay + network)
+```
+
+**Optimized Approach (Batch)**:
+```python
+# Single API call fetches all 6 verses
+verses = client.get_range("Deuteronomy", 32, 1, 32, 6)
+# Result: 1 API call, ~0.2 seconds (1 × 100ms delay + network)
+```
+
+**Performance Improvement**: 83% reduction in API calls and processing time
+
+### ParashaTextFetcher Architecture
+
+**Component**: `src/services/text/parasha_fetcher.py`
+
+**Responsibilities**:
+- Load Aliyah range configuration from `data/aliyah_ranges.toml`
+- Map Parasha/Aliyah names to (book, chapter_start, verse_start, chapter_end, verse_end)
+- Fetch entire Aliyah text in single batch request
+- Return structured list of (reference, hebrew_text) tuples
+
+**Configuration Format** (`data/aliyah_ranges.toml`):
+```toml
+[deuteronomy.32.haazinu.rishon]
+name = "ראשון"
+start_verse = 1
+end_verse = 6  # Exclusive (fetches 1-6)
+
+[deuteronomy.32.haazinu.sheni]
+name = "שני"
+start_verse = 7
+end_verse = 12
+```
+
+**Usage Example**:
+```python
+from src.services.text.parasha_fetcher import ParashaTextFetcher
+
+fetcher = ParashaTextFetcher()
+verses = fetcher.fetch_aliyah_text("האזינו", "ראשון")
+# Returns: [("Deuteronomy 32:1", "הַאֲזִינוּ..."), ("Deuteronomy 32:2", "יַעֲרֹף..."), ...]
+# API calls: 1 (batch range request)
+```
+
+### API Call Reduction by Parasha
+
+| Parasha  | Aliyot | Avg Verses/Aliyah | Naive Calls | Batch Calls | Reduction |
+|----------|--------|-------------------|-------------|-------------|-----------|
+| Haazinu  | 7      | 7.4               | 52          | 7           | 86%       |
+| Bereshit | 7      | 25                | 175         | 7           | 96%       |
+| Typical  | 7      | 15-30             | 105-210     | 7           | 93-97%    |
+
+### When to Use Batch vs. Per-Verse
+
+**Use Batch (`get_range`)** when:
+- Processing entire Aliyah (known verse range)
+- Fetching multiple consecutive verses
+- Optimizing for minimal API load
+
+**Use Per-Verse (`get_verse`)** when:
+- Fetching single verse for validation/testing
+- Dynamic verse selection (user-driven)
+- Verse range unknown at request time
+
+### Implementation Notes
+
+- **Rate Limiting**: Batch requests still count as single request (100ms delay applies)
+- **Cache Strategy**: Cache entire range response; individual verses extractable from cache
+- **Error Handling**: Range request failure affects entire Aliyah (fail-fast appropriate)
+- **Validation**: All verses in range must have Nikkud and T'amim (validate entire batch)
+
 ## Error Handling Strategy  
   
 Per spec clarification: **Fail processing with clear error message when API unavailable**  
@@ -221,9 +308,25 @@ class HebrewTextSource(Protocol):
   
         Raises:  
             HebrewTextUnavailableError: When API fails  
-            InvalidReferenceError: When reference is invalid  
-        """  
-        ...  
+            InvalidReferenceError: When reference is invalid
+        """
+        ...
+
+    def get_aliyah_text(self, parasha_name: str, aliyah_name: str) -> list[tuple[str, str]]:
+        """Get all verses for a specific Aliyah using batch retrieval.
+
+        Args:
+            parasha_name: Parasha name in Hebrew (e.g., "האזינו")
+            aliyah_name: Aliyah name in Hebrew (e.g., "ראשון")
+
+        Returns:
+            List of (reference, hebrew_text) tuples for all verses in Aliyah
+
+        Raises:
+            HebrewTextUnavailableError: When API fails
+            InvalidReferenceError: When Parasha/Aliyah mapping not found
+        """
+        ...
 ```  
   
 ## Testing Contract  

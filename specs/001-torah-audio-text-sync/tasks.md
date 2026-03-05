@@ -8,7 +8,7 @@
 
 This document provides a dependency-ordered, actionable task breakdown for implementing the Torah audio-visual synchronization feature. Tasks are organized by user story to enable independent implementation and testing of each increment.
 
-**Total Estimated Tasks**: 65
+**Total Estimated Tasks**: 131 (118 core + 13 batch optimization)
 **MVP Scope**: User Story 1 (Tasks T001-T035) - Single Aliyah synchronized video generation
 **Implementation Strategy**: Incremental delivery by user story, with each story independently testable
 
@@ -75,6 +75,22 @@ This document provides a dependency-ordered, actionable task breakdown for imple
 - [x] T033 [US1] Implement Sefaria response validation in src/services/text/sefaria_client.py (check for Nikkud and T'amim using lib/hebrew_validator.py)
 - [x] T034 [US1] Implement file-based caching in src/services/text/cache.py (save responses to data/cache/sefaria/{book}_{chapter}_{verse}.json)
 - [x] T035 [US1] Implement error handling per FR-002a in src/services/text/sefaria_client.py (fail with clear message when API unavailable)
+
+### Batch Text Fetching Module (Optional Phase 2 Enhancement)
+
+- [ ] T119 [OPT] Create AliyahRange Pydantic model in src/models/aliyah_range.py
+- [ ] T120 [OPT] Create initial data/aliyah_ranges.toml configuration with Haazinu examples
+- [ ] T121 [OPT] Create ParashaTextFetcher class in src/services/text/parasha_fetcher.py
+- [ ] T122 [OPT] Implement load_ranges() method to parse TOML configuration
+- [ ] T123 [OPT] Implement get_range_for_aliyah() lookup method
+- [ ] T124 [OPT] Implement fetch_aliyah_text() batch fetching using SefariaClient.get_range()
+- [ ] T125 [OPT] Implement error handling (InvalidReferenceError for missing mappings)
+- [ ] T126 [OPT] Update ProcessingPipeline to use ParashaTextFetcher instead of per-verse calls
+- [ ] T127 [OPT] Create unit tests for ParashaTextFetcher in tests/unit/services/text/test_parasha_fetcher.py
+- [ ] T128 [OPT] Create contract tests verifying API call reduction in tests/contract/test_batch_performance.py
+- [ ] T129 [OPT] Update integration tests to validate batch fetching in tests/integration/test_batch_processing.py
+- [ ] T130 [OPT] Populate aliyah_ranges.toml for all 54 Torah Parashot
+- [ ] T131 [OPT] Create validation script for TOML mappings in scripts/validate_aliyah_ranges.py
 
 ### Forced Alignment Module
 

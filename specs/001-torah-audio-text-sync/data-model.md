@@ -104,8 +104,44 @@ Represents a weekly Prophets (Neviim) portion read after the Torah portion.
 **Relationships**:  
 - **Associated with one** Parasha (1:1 or 0:1 - some Parashot have multiple Haftarot)  
   
-**Note**: Haftara processing follows the same pipeline as Aliyot but is tracked separately.  
-  
+**Note**: Haftara processing follows the same pipeline as Aliyot but is tracked separately.
+
+### AliyahRange
+
+Represents the verse range configuration for a specific Parasha/Aliyah combination.
+
+**Fields**:
+- `parasha_name: str` - Parasha name in Hebrew (e.g., "האזינו")
+- `aliyah_name: str` - Aliyah name in Hebrew (e.g., "ראשון", "שני")
+- `book: str` - Torah book name in English (e.g., "Deuteronomy", "Genesis")
+- `chapter_start: int` - Starting chapter number
+- `verse_start: int` - Starting verse number
+- `chapter_end: int` - Ending chapter number
+- `verse_end: int` - Ending verse number
+
+**Validation Rules**:
+- `chapter_start` ≤ `chapter_end`
+- If `chapter_start == chapter_end`, then `verse_start` < `verse_end`
+- `parasha_name` and `aliyah_name` must be non-empty
+- `book` must be valid Torah book name
+
+**Relationships**:
+- **Maps to one** Aliyah (1:1 via parasha_name + aliyah_name key)
+
+**Storage**:
+- Stored in `data/aliyah_ranges.toml` as configuration (not runtime data)
+- Format: `[parasha_name.aliyah_name]` TOML table per range
+
+**Example**:
+```toml
+[haazinu.rishon]
+book = "Deuteronomy"
+chapter_start = 32
+verse_start = 1
+chapter_end = 32
+verse_end = 6
+```
+
 ### Audio Source  
   
 Represents an audio recording file for one Aliyah.  
@@ -146,9 +182,39 @@ Represents the source of Hebrew text (Sefaria API).
 - `base_url` must be valid URL  
 - `include_vowels` and `include_cantillation` must both be `true` for this feature  
   
-**Relationships**:  
-- **Provides text for many** Pasuk (1:N via API calls)  
-  
+**Relationships**:
+- **Provides text for many** Pasuk (1:N via API calls)
+
+### ParashaTextFetcher
+
+Service component that fetches Hebrew text for entire Aliyot using batch retrieval.
+
+**Fields**:
+- `client: HebrewTextSource` - Underlying text source client (e.g., SefariaClient)
+- `ranges: dict[tuple[str, str], AliyahRange]` - Loaded Aliyah range mappings (key: (parasha_name, aliyah_name))
+- `config_path: Path` - Path to `aliyah_ranges.toml` configuration file
+
+**Methods**:
+- `load_ranges()` - Load Aliyah range configuration from TOML
+- `fetch_aliyah_text(parasha_name, aliyah_name)` - Fetch all verses for Aliyah using batch request
+- `get_range_for_aliyah(parasha_name, aliyah_name)` - Lookup verse range from configuration
+
+**Validation Rules**:
+- Configuration file must exist at initialization
+- All Parasha/Aliyah combinations must have valid ranges
+- Batch-fetched text must validate (Nikkud + T'amim present)
+
+**Relationships**:
+- **Uses one** HebrewTextSource implementation (composition)
+- **Loads many** AliyahRange configurations (1:N)
+- **Provides text for** ProcessingPipeline (service dependency)
+
+**Design Rationale**:
+- **Decoupled from Pipeline**: Fetcher is standalone service, testable independently
+- **Configuration-Driven**: Range mappings externalized to TOML (easily maintainable)
+- **Performance-Optimized**: Reduces API calls by 86-97% vs. per-verse retrieval
+- **Backward Compatible**: Implements same `HebrewTextSource` protocol as SefariaClient
+
 ### Synchronized Video  
   
 Represents the output video file with highlighted text overlay.  
@@ -224,8 +290,10 @@ Embedded object within TimestampMap (not a top-level entity).
 Parasha (1) ──────< (N) Aliyah (1) ──────< (N) Pasuk  
     │                      │  
     │                      │  
-    │                      ├──────< (1) Audio Source  
-    │                      │  
+    │                      ├──────< (1) Audio Source
+    │                      │
+    │                      ├──────< (1) AliyahRange [config mapping]
+    │                      │
     │                      ├──────< (1) Timestamp Map (1) ──────< (N) VerseTimestamp  
     │                      │  
     │                      └──────< (1) Synchronized Video  
@@ -233,7 +301,12 @@ Parasha (1) ──────< (N) Aliyah (1) ──────< (N) Pasuk
     └──────< (1) Haftara  
   
   
-Hebrew Text Source (1) ──────< (N) Pasuk [via API calls]  
+Hebrew Text Source (1) ──────< (N) Pasuk [via API calls]
+                  ▲
+                  │
+                  │ (uses)
+                  │
+       ParashaTextFetcher (1) ──────< (N) AliyahRange [loads config]
 ```  
   
 ## Implementation Notes  
@@ -290,8 +363,71 @@ class TimestampMap(BaseModel):
 2. **Validation on Construction**: Use Pydantic validators to enforce constraints early  
 3. **File Path Handling**: Use `pathlib.Path` for cross-platform compatibility  
 4. **JSON Serialization**: Pydantic provides automatic `model_dump_json()` for storage  
-5. **State Machine**: Aliyah state transitions tracked for pipeline monitoring  
-  
+5. **State Machine**: Aliyah state transitions tracked for pipeline monitoring
+
+### Text Fetching Architecture
+
+**Component Hierarchy**:
+
+```text
+ProcessingPipeline
+    │
+    ├─> ParashaTextFetcher (batch retrieval, Aliyah-aware)
+    │       │
+    │       └─> SefariaClient (low-level API wrapper)
+    │               │
+    │               └─> CachedSefariaClient (caching layer)
+    │
+    └─> (alternative) SefariaClient (direct per-verse fallback)
+```
+
+**When to Use Each Component**:
+
+| Component              | Use Case                                  | API Calls (Haazinu Rishon) |
+|------------------------|-------------------------------------------|-----------------------------|
+| `ParashaTextFetcher`   | Normal Aliyah processing (known range)    | 1 batch call                |
+| `CachedSefariaClient`  | Re-processing with cache hits             | 0 (cached)                  |
+| `SefariaClient`        | Testing, validation, dynamic verse fetch  | 1 per verse (6 total)       |
+
+**Configuration Loading**:
+
+```python
+# data/aliyah_ranges.toml structure
+[haazinu.rishon]
+book = "Deuteronomy"
+chapter_start = 32
+verse_start = 1
+chapter_end = 32
+verse_end = 6
+
+# Loaded as:
+{
+    ("האזינו", "ראשון"): AliyahRange(
+        parasha_name="האזינו",
+        aliyah_name="ראשון",
+        book="Deuteronomy",
+        chapter_start=32,
+        verse_start=1,
+        chapter_end=32,
+        verse_end=6
+    )
+}
+```
+
+**Error Handling Strategy**:
+
+1. **Missing Aliyah Range**: Raise `InvalidReferenceError` (config incomplete)
+2. **Batch API Failure**: Retry with exponential backoff (same as per-verse)
+3. **Validation Failure**: Raise `HebrewTextUnavailableError` (missing diacritics)
+4. **Partial Range Success**: Not applicable (batch is atomic - all or nothing)
+
+**Key Design Decision - Why Separate Fetcher?**
+
+- **Single Responsibility**: `SefariaClient` = API wrapper, `ParashaTextFetcher` = Aliyah-aware orchestrator
+- **Testability**: Can mock `SefariaClient` in `ParashaTextFetcher` tests
+- **Flexibility**: Easy to add alternative text sources (local database, different API)
+- **Configuration Management**: Range mappings centralized, not scattered in code
+
 ## Next Steps  
   
 Phase 1 continues with:  
