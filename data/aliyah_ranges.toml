@@ -1,0 +1,55 @@
+# Aliyah verse range configuration
+# Edited by Claude Sonnet 4.5
+#
+# Format: ["parasha_name"."aliyah_name"]
+# All verse ranges are INCLUSIVE (verse_end is the last verse to include)
+# Using Hebrew names to match filename parser output
+
+["האזינו"."ראשון"]
+book = "Deuteronomy"
+chapter_start = 32
+verse_start = 1
+chapter_end = 32
+verse_end = 6
+
+["האזינו"."שני"]
+book = "Deuteronomy"
+chapter_start = 32
+verse_start = 7
+chapter_end = 32
+verse_end = 12
+
+["האזינו"."שלישי"]
+book = "Deuteronomy"
+chapter_start = 32
+verse_start = 13
+chapter_end = 32
+verse_end = 18
+
+["האזינו"."רביעי"]
+book = "Deuteronomy"
+chapter_start = 32
+verse_start = 19
+chapter_end = 32
+verse_end = 28
+
+["האזינו"."חמישי"]
+book = "Deuteronomy"
+chapter_start = 32
+verse_start = 29
+chapter_end = 32
+verse_end = 39
+
+["האזינו"."שישי"]
+book = "Deuteronomy"
+chapter_start = 32
+verse_start = 40
+chapter_end = 32
+verse_end = 43
+
+["האזינו"."שביעי"]
+book = "Deuteronomy"
+chapter_start = 32
+verse_start = 44
+chapter_end = 32
+verse_end = 52

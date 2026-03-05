@@ -78,19 +78,19 @@ This document provides a dependency-ordered, actionable task breakdown for imple
 
 ### Batch Text Fetching Module (Optional Phase 2 Enhancement)
 
-- [ ] T119 [OPT] Create AliyahRange Pydantic model in src/models/aliyah_range.py
-- [ ] T120 [OPT] Create initial data/aliyah_ranges.toml configuration with Haazinu examples
-- [ ] T121 [OPT] Create ParashaTextFetcher class in src/services/text/parasha_fetcher.py
-- [ ] T122 [OPT] Implement load_ranges() method to parse TOML configuration
-- [ ] T123 [OPT] Implement get_range_for_aliyah() lookup method
-- [ ] T124 [OPT] Implement fetch_aliyah_text() batch fetching using SefariaClient.get_range()
-- [ ] T125 [OPT] Implement error handling (InvalidReferenceError for missing mappings)
-- [ ] T126 [OPT] Update ProcessingPipeline to use ParashaTextFetcher instead of per-verse calls
-- [ ] T127 [OPT] Create unit tests for ParashaTextFetcher in tests/unit/services/text/test_parasha_fetcher.py
-- [ ] T128 [OPT] Create contract tests verifying API call reduction in tests/contract/test_batch_performance.py
-- [ ] T129 [OPT] Update integration tests to validate batch fetching in tests/integration/test_batch_processing.py
+- [x] T119 [OPT] Create AliyahRange Pydantic model in src/models/aliyah_range.py
+- [x] T120 [OPT] Create initial data/aliyah_ranges.toml configuration with Haazinu examples
+- [x] T121 [OPT] Create ParashaTextFetcher class in src/services/text/parasha_fetcher.py
+- [x] T122 [OPT] Implement load_ranges() method to parse TOML configuration
+- [x] T123 [OPT] Implement get_range_for_aliyah() lookup method
+- [x] T124 [OPT] Implement fetch_aliyah_text() batch fetching using SefariaClient.get_range()
+- [x] T125 [OPT] Implement error handling (InvalidReferenceError for missing mappings)
+- [x] T126 [OPT] Update ProcessingPipeline to use ParashaTextFetcher instead of per-verse calls
+- [x] T127 [OPT] Create unit tests for ParashaTextFetcher in tests/unit/services/text/test_parasha_fetcher.py
+- [x] T128 [OPT] Create contract tests verifying API call reduction in tests/contract/test_batch_performance.py
+- [x] T129 [OPT] Update integration tests to validate batch fetching in tests/integration/test_batch_processing.py
 - [ ] T130 [OPT] Populate aliyah_ranges.toml for all 54 Torah Parashot
-- [ ] T131 [OPT] Create validation script for TOML mappings in scripts/validate_aliyah_ranges.py
+- [x] T131 [OPT] Create validation script for TOML mappings in scripts/validate_aliyah_ranges.py
 
 ### Forced Alignment Module
 
