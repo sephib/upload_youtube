@@ -89,7 +89,7 @@ This document provides a dependency-ordered, actionable task breakdown for imple
 - [x] T127 [OPT] Create unit tests for ParashaTextFetcher in tests/unit/services/text/test_parasha_fetcher.py
 - [x] T128 [OPT] Create contract tests verifying API call reduction in tests/contract/test_batch_performance.py
 - [x] T129 [OPT] Update integration tests to validate batch fetching in tests/integration/test_batch_processing.py
-- [ ] T130 [OPT] Populate aliyah_ranges.toml for all 54 Torah Parashot
+- [ ] T130 [OPT] Populate aliyah_ranges.toml for all 54 Torah Parashot (DEFERRED: Add incrementally as needed)
 - [x] T131 [OPT] Create validation script for TOML mappings in scripts/validate_aliyah_ranges.py
 
 ### Forced Alignment Module
