@@ -383,184 +383,16 @@ Once Phase 1 is working, add scrolling to keep the current verse centered.
 
 ## Alignment Model Evaluation
 
-### Current: aeneas with DTW
+> **Full comparison**: See [alignment-model-comparison.md](alignment-model-comparison.md) for detailed
+> evaluation of aeneas, WhisperX, MFA, and wav2vec2.
 
-**How It Works**:
-1. Audio → MFCC features (Mel-Frequency Cepstral Coefficients)
-2. Text → TTS synthesis → MFCC features
-3. DTW (Dynamic Time Warping) aligns both MFCC sequences
-4. Output: Start/end timestamps per text fragment
+**Decision**: Keep aeneas for Phase 1 (verse-level highlighting). Evaluate WhisperX in Phase 2
+if accuracy issues arise or word-level highlighting is requested.
 
-**Current Configuration**:
-- Language: `eng` (English TTS via espeak)
-- Text Type: `plain` (one line per verse)
-- Output: JSON sync map
-
-**Accuracy Metrics** (from current code):
-- Confidence calculation based on gap detection
-- Target: 0.90+ confidence score
-- Validation: Monotonic timestamps, gaps < 5 seconds
-
-**Limitations for Hebrew**:
-1. **No Hebrew TTS** - espeak doesn't have Hebrew voice
-   - Current workaround: Use English TTS, alignment still works because DTW compares audio features (language-agnostic)
-   - Impact: Sub-optimal for Hebrew prosody/rhythm differences
-
-2. **Verse-Level Only** - Cannot do word-level alignment
-   - Current granularity: ~4-8 seconds per verse
-   - User request mentions: "maybe we need to check various AI models"
-
----
-
-### Alternative: Whisper + Forced Alignment
-
-**Whisper** (OpenAI) is a state-of-the-art ASR model with multilingual support including Hebrew.
-
-#### Option A: WhisperX
-
-**GitHub**: https://github.com/m-bain/whisperX
-
-**Capabilities**:
-- Word-level timestamps using phoneme alignment
-- Native Hebrew language support
-- Uses wav2vec2 for forced alignment (more accurate than DTW)
-- Returns JSON with word-level timings
-
-**Example Output**:
-```json
-{
-  "segments": [
-    {
-      "start": 0.0,
-      "end": 4.2,
-      "text": "האזינו השמים ואדברה",
-      "words": [
-        {"word": "האזינו", "start": 0.0, "end": 1.1},
-        {"word": "השמים", "start": 1.2, "end": 2.0},
-        {"word": "ואדברה", "start": 2.1, "end": 4.2}
-      ]
-    }
-  ]
-}
-```
-
-**Pros**:
-- ✅ Native Hebrew ASR (better accuracy for Hebrew phonetics)
-- ✅ Word-level granularity (could enable word-by-word highlighting in future)
-- ✅ Better confidence scores (based on ASR probability)
-- ✅ Active development and community support
-- ✅ Handles Hebrew diacritics better (trained on diverse Hebrew audio)
-
-**Cons**:
-- ⚠️ Requires GPU for real-time performance (CPU: ~30s per minute of audio)
-- ⚠️ Larger dependency (PyTorch + Whisper models ~3GB)
-- ⚠️ More complex setup (model downloads, CUDA config)
-- ⚠️ Higher memory usage (~4-6GB during processing)
-
-**Performance Comparison**:
-
-| Metric | aeneas (current) | WhisperX |
-|--------|------------------|----------|
-| **Processing Speed** | ~1 minute / 10min audio | ~5 minutes / 10min audio (CPU) |
-| **Accuracy** | 85-95% (verse-level) | 95-98% (word-level) |
-| **Memory** | ~500MB | ~4-6GB |
-| **Dependencies** | espeak, ffmpeg (~50MB) | PyTorch, Whisper (~3GB) |
-| **Hebrew Support** | Indirect (MFCC-based) | Native (trained on Hebrew) |
-
----
-
-#### Option B: montreal-forced-aligner (MFA)
-
-**GitHub**: https://github.com/MontrealCorpusTools/Montreal-Forced-Aligner
-
-**Capabilities**:
-- Phoneme-level forced alignment using acoustic models
-- Requires Hebrew acoustic model + pronunciation dictionary
-- Research-grade aligner used in linguistics
-
-**Pros**:
-- ✅ Highest accuracy for phoneme-level alignment
-- ✅ Handles pronunciation variations
-
-**Cons**:
-- ❌ No pre-trained Hebrew models readily available
-- ❌ Requires training corpus (hundreds of hours of annotated Hebrew audio)
-- ❌ Complex setup and configuration
-- ❌ Overkill for verse-level synchronization
-
-**Verdict**: NOT RECOMMENDED (too complex for current needs)
-
----
-
-#### Option C: wav2vec2 + CTC Forced Alignment
-
-**Hugging Face**: facebook/wav2vec2-large-xlsr-53-hebrew
-
-**Capabilities**:
-- Hebrew ASR model based on wav2vec2
-- CTC (Connectionist Temporal Classification) for alignment
-- Can be adapted for forced alignment
-
-**Pros**:
-- ✅ Native Hebrew support
-- ✅ Smaller than Whisper (~1.2GB model)
-
-**Cons**:
-- ⚠️ Requires custom forced alignment implementation
-- ⚠️ Less documented than WhisperX for alignment use case
-- ⚠️ Still requires PyTorch
-
-**Verdict**: POSSIBLE but more implementation work than WhisperX
-
----
-
-### Recommendation: Hybrid Approach
-
-**Phase 1: Keep aeneas**
-- ✅ Already working with acceptable accuracy (90%+)
-- ✅ Lightweight and fast
-- ✅ Sufficient for verse-level highlighting
-- ✅ No new dependencies
-
-**Phase 2: Evaluate WhisperX (if accuracy issues arise)**
-
-**Decision Criteria** (when to switch):
-1. **User reports accuracy issues** - If >10% of Aliyot have misaligned verses
-2. **Word-level highlighting requested** - If users want individual word highlighting
-3. **GPU resources available** - If deployment environment has GPU
-
-**Implementation Strategy**:
-1. Design `AlignmentEngine` as pluggable interface
-2. Create `AeneasAligner` (current) and `WhisperAligner` (future)
-3. Add configuration flag: `alignment.engine = "aeneas" | "whisper"`
-4. Test both engines on same audio samples
-5. Compare accuracy metrics and processing time
-
-```python
-# Abstract interface
-class AlignmentEngine(Protocol):
-    def align(
-        self,
-        audio_file: Path,
-        verses: list[tuple[str, str]]
-    ) -> TimestampMap:
-        ...
-
-# Current implementation (keep)
-class AeneasAligner(AlignmentEngine):
-    # ... existing code ...
-
-# Future implementation (Phase 2)
-class WhisperAligner(AlignmentEngine):
-    def __init__(self, model_size: str = "medium"):
-        import whisperx
-        self.model = whisperx.load_model(model_size, language="he")
-
-    def align(self, audio_file, verses):
-        result = self.model.transcribe(str(audio_file))
-        # Map recognized words to verse boundaries
-        # Return TimestampMap
-```
+**Key factors for this design**:
+- aeneas is sufficient for verse-level granularity (90%+ accuracy)
+- No GPU required, minimal dependencies
+- `AlignmentEngine` is designed as a pluggable Protocol to support future alternatives
 
 ---
 
@@ -654,7 +486,209 @@ This approach balances **user value** (immediate highlighting), **technical risk
 - [Sefaria API Docs](https://developers.sefaria.org/)
 - Project Spec: `specs/001-torah-audio-text-sync/spec.md`
 - Research Notes: `specs/001-torah-audio-text-sync/research.md`
+- Alignment Model Comparison: `specs/001-torah-audio-text-sync/alignment-model-comparison.md`
+
+---
+
+## Appendix: Visual Architecture Diagrams
+
+<!-- Consolidated from verse-highlighting-diagram.md -->
+
+### Current Implementation (Static)
+
+```
+┌─────────────────────────────────────────┐
+│  Video Frame (t = any time)             │
+│                                         │
+│  ┌───────────────────────────────────┐ │
+│  │  Black Background                 │ │
+│  │                                   │ │
+│  │  (1) verse 1 text ────────────┐  │ │
+│  │  (2) verse 2 text             │  │ │
+│  │  (3) verse 3 text             │  │ │  ← All verses
+│  │  (4) verse 4 text             │  │ │    white, static,
+│  │  (5) verse 5 text             │  │ │    always visible
+│  │  (6) verse 6 text ────────────┘  │ │
+│  │                                   │ │
+│  └───────────────────────────────────┘ │
+│                                         │
+└─────────────────────────────────────────┘
+
+Problem: No indication of which verse is being spoken
+```
+
+### Proposed Layer Composition
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  Composite Video                                        │
+│                                                         │
+│  Layer 1: Background (Black) ──────────────────┐       │
+│  Layer 2: Normal Text (White)                  │       │
+│  Layer 3: Highlight Text (Gold) ────────────┐  │       │
+│                                              │  │       │
+│  ┌─────────────────────────────────────┐    │  │       │
+│  │                                     │    │  │       │
+│  │  (1) verse 1 ───┐                  │    │  │       │
+│  │  (2) verse 2    │ ← Normal layer   │    │  │       │
+│  │  (3) verse 3 ───┘   (white, always │    │  │       │
+│  │  (4) verse 4        visible)        │    │  │       │
+│  │  (5) verse 5                        │    │  │       │
+│  │  (6) verse 6                        │    │  │       │
+│  │         ↑                           │    │  │       │
+│  │         └── Highlight layer ────────┘    │  │       │
+│  │             (gold, visible only          │  │       │
+│  │              during verse time)          │  │       │
+│  │                                          │  │       │
+│  └──────────────────────────────────────────┘  │       │
+│                                                 │       │
+└─────────────────────────────────────────────────┘       │
+```
+
+### Timeline View
+
+```
+Time:  0s    1s    2s    3s    4s    5s    6s    7s    8s
+       │     │     │     │     │     │     │     │     │
+Verse 1: [════════════════]
+         └─ Normal layer: white, t=0 to t=END
+         └─ Highlight layer: gold, t=0 to t=4.2
+
+Verse 2:                  [════════════════]
+                          └─ Normal: white, t=0 to t=END
+                          └─ Highlight: gold, t=4.2 to t=8.1
+
+Verse 3:                                      [═══════...
+                                              └─ Normal: white
+                                              └─ Highlight: gold, t=8.1+
+
+Visual Result:
+0-4.2s:  Verse 1 GOLD, Verse 2 white, Verse 3 white
+4.2-8.1s: Verse 1 white, Verse 2 GOLD, Verse 3 white
+8.1+s:   Verse 1 white, Verse 2 white, Verse 3 GOLD
+```
+
+### Rendering Pipeline
+
+```
+┌───────────────────────────────────────────────────────────────┐
+│  Input: TimestampMap + Verses                                 │
+└────────────────┬──────────────────────────────────────────────┘
+                 │
+                 ▼
+┌───────────────────────────────────────────────────────────────┐
+│  Step 1: Generate Normal Layer Images                         │
+│                                                                │
+│  for each verse:                                               │
+│    image = render_verse_image(                                │
+│      verse_num, hebrew_text,                                  │
+│      color="#FFFFFF",  ← White                                │
+│      y_offset = i * verse_spacing                             │
+│    )                                                           │
+│    clip = ImageClip(image).with_duration(full_video_duration) │
+│    normal_clips.append(clip)                                  │
+└────────────────┬──────────────────────────────────────────────┘
+                 │
+                 ▼
+┌───────────────────────────────────────────────────────────────┐
+│  Step 2: Generate Highlight Layer Images                      │
+│                                                                │
+│  for each verse, timestamp:                                   │
+│    image = render_verse_image(                                │
+│      verse_num, hebrew_text,                                  │
+│      color="#FFD700",  ← Gold                                 │
+│      y_offset = i * verse_spacing                             │
+│    )                                                           │
+│    clip = ImageClip(image)                                    │
+│      .with_start(timestamp.start_time)  ← Only visible during │
+│      .with_end(timestamp.end_time)      ← verse audio time    │
+│    highlight_clips.append(clip)                               │
+└────────────────┬──────────────────────────────────────────────┘
+                 │
+                 ▼
+┌───────────────────────────────────────────────────────────────┐
+│  Step 3: Composite All Layers                                 │
+│                                                                │
+│  video = CompositeVideoClip([                                 │
+│    black_background,                                          │
+│    *normal_clips,     ← All verses (white, always visible)    │
+│    *highlight_clips   ← Current verse (gold, timed)           │
+│  ])                                                            │
+│  video = video.with_audio(audio_clip)                         │
+└────────────────┬──────────────────────────────────────────────┘
+                 │
+                 ▼
+┌───────────────────────────────────────────────────────────────┐
+│  Output: MP4 Video (640×360, 30fps, H.264)                    │
+└───────────────────────────────────────────────────────────────┘
+```
+
+### Frame-by-Frame Example
+
+**Scenario**: 3 verses, 640x360 video
+
+**Verse Data**:
+- Verse 1: "האזינו השמים ואדברה" (0.0s - 4.2s)
+- Verse 2: "יערף כמטר לקחי" (4.2s - 7.8s)
+- Verse 3: "תזל כטל אמרתי" (7.8s - 11.5s)
+
+**Frame at t=0.5s (during Verse 1)**:
+
+```
+┌─────────────────────────────────────────┐
+│ 640×360 Video Frame @ t=0.5s            │
+│                                         │
+│  ╔═══════════════════════════════════╗ │
+│  ║ (1) האזינו השמים ואדברה          ║ │ ← GOLD (highlighted)
+│  ╚═══════════════════════════════════╝ │
+│                                         │
+│  (2) יערף כמטר לקחי                   │ ← White (normal)
+│                                         │
+│  (3) תזל כטל אמרתי                    │ ← White (normal)
+│                                         │
+└─────────────────────────────────────────┘
+```
+
+**Frame at t=5.0s (during Verse 2)**:
+
+```
+┌─────────────────────────────────────────┐
+│ 640×360 Video Frame @ t=5.0s            │
+│                                         │
+│  (1) האזינו השמים ואדברה               │ ← White (completed)
+│                                         │
+│  ╔═══════════════════════════════════╗ │
+│  ║ (2) יערף כמטר לקחי               ║ │ ← GOLD (highlighted)
+│  ╚═══════════════════════════════════╝ │
+│                                         │
+│  (3) תזל כטל אמרתי                    │ ← White (upcoming)
+│                                         │
+└─────────────────────────────────────────┘
+```
+
+### Memory Layout and Scaling
+
+```
+Clip Objects in Memory:
+  CompositeVideoClip
+  ├── Background (ColorClip): 640×360, black, ~100KB
+  ├── Normal Clips (6 verses × ~500KB = 3MB)
+  │   ├── Verse 1 (ImageClip, white, t=0 to END)
+  │   ├── Verse 2-5 ...
+  │   └── Verse 6 (ImageClip, white, t=0 to END)
+  └── Highlight Clips (6 verses × ~500KB = 3MB)
+      ├── Verse 1 (ImageClip, gold, t=0 to 4.2s)
+      ├── Verse 2-5 ...
+      └── Verse 6 (ImageClip, gold, t=20.7 to 25.0s)
+
+Scaling Analysis:
+  Typical Aliyah (8 verses):  8 × 1MB = 8MB
+  Long Aliyah (20 verses):   20 × 1MB = 20MB
+  Very Long (50 verses):     50 × 1MB = 50MB
+  All well under 2GB target.
+```
 
 ---
 
 **Generated by Claude Sonnet 4.5**
+<!-- Edited by Claude Opus 4.6 - consolidated verse-highlighting-diagram.md -->

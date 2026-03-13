@@ -1,4 +1,4 @@
-# Edited by Claude Code
+# Edited by Claude Code, Claude Opus 4.6
 """VideoRenderer for creating synchronized videos with Hebrew text overlay."""
 
 import tempfile
@@ -14,8 +14,8 @@ from moviepy import (
 from src.lib.config import get_font_path, settings
 from src.lib.exceptions import VideoRenderError
 from src.lib.logging import get_logger
-from src.models.timestamp_map import TimestampMap
-from src.models.video import SynchronizedVideo
+from src.models.alignment_run import AlignmentRun
+from src.models.alya_video import AlyaVideo
 from src.services.text.hebrew_renderer import render_hebrew_text_image_simple
 
 logger = get_logger(__name__)
@@ -60,28 +60,29 @@ class VideoRenderer:
     def render(
         self,
         audio_file: Path,
-        timestamp_map: TimestampMap,
+        alignment_run: AlignmentRun,
         output_path: Path,
         verses: list[tuple[str, str]] | None = None,
-    ) -> SynchronizedVideo:
+    ) -> AlyaVideo:
         """Render synchronized video with text overlay.
 
         Args:
             audio_file: Path to audio file
-            timestamp_map: TimestampMap with verse timestamps
+            alignment_run: AlignmentRun with verse timestamps
             output_path: Output video file path
             verses: Optional list of (reference, hebrew_text) tuples
 
         Returns:
-            SynchronizedVideo model
+            AlyaVideo model
 
         Raises:
             VideoRenderError: If rendering fails
         """
+        verse_timestamps = alignment_run.get_timestamps()
         logger.info(
             f"Starting video render",
             audio_file=str(audio_file),
-            verse_count=len(timestamp_map.verse_timestamps),
+            verse_count=len(verse_timestamps),
             output_path=str(output_path),
         )
 
@@ -96,7 +97,7 @@ class VideoRenderer:
             )  # Black background
 
             # Create text clips for each verse
-            text_clips = self._create_text_clips(timestamp_map, verses, duration)
+            text_clips = self._create_text_clips(alignment_run, verses, duration)
 
             # Composite video
             video = CompositeVideoClip([background] + text_clips)
@@ -132,16 +133,16 @@ class VideoRenderer:
                 file_size_mb=output_path.stat().st_size / (1024 * 1024),
             )
 
-            # Create SynchronizedVideo model
-            return SynchronizedVideo(
-                file_path=output_path,
+            # Create AlyaVideo model
+            return AlyaVideo(
+                alya_id=alignment_run.alya_id,
+                file_path=str(output_path),
                 format="mp4",
-                resolution=self.resolution,
+                resolution_w=self.resolution[0],
+                resolution_h=self.resolution[1],
                 frame_rate=self.fps,
                 codec="h264",
                 duration_seconds=duration,
-                parasha_name=timestamp_map.parasha_name,
-                aliyah_name=timestamp_map.aliyah_name,
             )
 
         except Exception as e:
@@ -149,7 +150,7 @@ class VideoRenderer:
 
     def _create_text_clips(
         self,
-        timestamp_map: TimestampMap,
+        alignment_run: AlignmentRun,
         verses: list[tuple[str, str]] | None = None,
         audio_duration: float = 10.0,
     ) -> list:
@@ -159,7 +160,7 @@ class VideoRenderer:
         with all verses visible for the entire video duration.
 
         Args:
-            timestamp_map: TimestampMap with verse timestamps
+            alignment_run: AlignmentRun with verse timestamps
             verses: Optional list of (reference, hebrew_text) tuples
             audio_duration: Audio duration in seconds (for clip duration)
 

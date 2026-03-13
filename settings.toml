@@ -8,17 +8,18 @@ output_dir = "output/videos"
 log_dir = "output/logs"
 error_dir = "output/errors"
 timestamp_map_dir = "data/timestamp_maps"
+db_path = "data/torah_sync.duckdb"
 font_path = "/System/Library/Fonts/ArialHB.ttc"  # Arial Hebrew font
 log_level = "INFO"
 parallel_workers = 1
 
 [default.video]
 # Video rendering settings
-resolution = [640, 360]  # 360p (width x height)
+resolution = [1280, 720]  # 720p (width x height) - Edited by Claude Code
 fps = 30
 codec = "libx264"
 crf = 23  # Constant Rate Factor (quality: 0=lossless, 51=worst)
-font_size = 20  # Font size in points for verse text
+font_size = 40  # Font size in points for verse text - Edited by Claude Code
 highlight_color = "#FFD700"  # Gold color for highlighted verse
 normal_color = "#FFFFFF"  # White for non-highlighted verses
 

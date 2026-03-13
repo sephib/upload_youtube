@@ -53,10 +53,11 @@ This document provides a dependency-ordered, actionable task breakdown for imple
 
 ## Phase 3: User Story 1 - View Synchronized Torah Reading Video (P1)
 
-**Goal**: Generate a synchronized video for a single Aliyah where Hebrew text highlights in real-time with audio
-**User Story**: A student of Torah reading wants to practice their chanting by following along with a visual guide
-**Independent Test**: Process one audio file (e.g., "פרשת האזינו - ראשון - נוסח אשכנז.mp4") and verify verse highlighting synchronizes with audio playback
-**Value Delivered**: Core feature - enables users to visually follow professional Torah readings
+**Goal**: Generate a video for a single Aliyah with static Hebrew text displayed alongside audio
+**User Story**: A student of Torah reading wants to follow along with a visual guide showing Hebrew text while audio plays
+**Independent Test**: Process one audio file (e.g., "פרשת האזינו - ראשון - נוסח אשכנז.mp4") and verify Hebrew text is displayed clearly with proper diacritical marks
+**Value Delivered**: Foundational video generation - enables users to see text while listening to professional Torah readings
+**Phase Note**: Verse highlighting (dynamic color changes) is deferred to Phase 3a, which depends on spec 002 (Manual Alignment Correction)
 
 ### Audio Processing Module
 
@@ -107,8 +108,6 @@ This document provides a dependency-ordered, actionable task breakdown for imple
 - [x] T043 [US1] Create VideoRenderer class in src/services/video/renderer.py using moviepy
 - [x] T044 [US1] Implement font loading in src/services/video/renderer.py (load FrankRuhl-Regular.ttf with size 18-24pt)
 - [x] T045 [US1] Implement Hebrew text layout in src/services/video/renderer.py (calculate positions for multiple verses on screen)
-- [x] T046 [US1] Implement verse highlighting logic in src/services/video/renderer.py (apply color/opacity changes based on timestamps)
-- [x] T047 [US1] Implement scrolling animation in src/services/video/renderer.py (auto-scroll to keep highlighted verse centered)
 - [x] T048 [US1] Implement video composition in src/services/video/renderer.py (combine audio track + text overlay at 30fps)
 - [x] T049 [US1] Implement video encoding in src/services/video/renderer.py (MP4 with H.264 codec, 640x360 resolution, CRF 23)
 - [x] T050 [US1] Implement output validation in src/services/video/renderer.py (verify resolution, duration, codec) - must be valid to upload to youtube
@@ -136,8 +135,23 @@ This document provides a dependency-ordered, actionable task breakdown for imple
 
 - [x] T064 [US1] Create end-to-end integration test in tests/integration/test_us1_pipeline.py (process sample Haazinu Rishon audio file)
 - [x] T065 [US1] Verify test output video in tests/integration/test_us1_pipeline.py (check resolution 640x360, MP4 format, duration matches audio)
-- [x] T066 [US1] Verify verse highlighting timing in tests/integration/test_us1_pipeline.py (sample timestamp checks within 0.5s accuracy)
 - [x] T067 [US1] Verify Hebrew text readability in tests/integration/test_us1_pipeline.py (diacritical marks visible in rendered frames)
+
+## Phase 3a: Verse Highlighting (Depends on Spec 002 - Manual Alignment Correction)
+
+**Goal**: Add dynamic verse highlighting to videos, where the active verse changes color in sync with the audio
+**Dependencies**: Requires Phase 3 (static video generation) + spec 002 (manual alignment correction for fine-tuned timestamps)
+**Design**: See [verse-highlighting-design.md](verse-highlighting-design.md) for multi-layer architecture
+**Value Delivered**: "Follow the reader" experience - users can see which verse is being read in real-time
+
+### Verse Highlighting Tasks
+
+- [ ] T046 [US1] Implement verse highlighting logic in src/services/video/renderer.py (apply color/opacity changes based on timestamps)
+- [ ] T047 [US1] Implement scrolling animation in src/services/video/renderer.py (auto-scroll to keep highlighted verse centered)
+
+### Highlighting Integration Testing
+
+- [ ] T066 [US1] Verify verse highlighting timing in tests/integration/test_us1_pipeline.py (sample timestamp checks within 0.5s accuracy)
 
 ## Phase 4: User Story 2 - Identify Context Within Torah Portion (P2)
 
@@ -251,22 +265,27 @@ This document provides a dependency-ordered, actionable task breakdown for imple
 ```mermaid
 graph TD
     Setup[Phase 1: Setup] --> Foundation[Phase 2: Foundation]
-    Foundation --> US1[Phase 3: US1 - Sync Video]
+    Foundation --> US1[Phase 3: US1 - Static Text Video]
     US1 --> US2[Phase 4: US2 - Metadata]
     US1 --> US3[Phase 5: US3 - Batch Processing]
+    US1 --> Spec002[Spec 002: Manual Alignment]
+    Spec002 --> Highlight[Phase 3a: Verse Highlighting]
     US2 --> Polish[Phase 6: Polish]
     US3 --> Polish
+    Highlight --> Polish
 ```
 
-**Critical Path**: Setup → Foundation → US1 → US2 → Polish
-**Parallel Opportunities**: US2 and US3 can be developed simultaneously after US1 completes
+**Critical Path**: Setup → Foundation → US1 (static video) → US2/US3 → Polish
+**Highlighting Path**: US1 → Spec 002 (manual alignment correction) → Phase 3a (highlighting)
+**Parallel Opportunities**: US2, US3, and Spec 002 can be developed simultaneously after US1 completes
 
 ### Phase-Level Blocking Dependencies
 
 - **Phase 2** BLOCKS **Phase 3**: Data models must exist before services can use them
-- **Phase 3 (US1)** BLOCKS **Phases 4 & 5**: Core pipeline must work before metadata/batch features
+- **Phase 3 (US1)** BLOCKS **Phases 3a, 4 & 5**: Core static video pipeline must work before highlighting/metadata/batch
+- **Phase 3 (US1)** + **Spec 002** BLOCK **Phase 3a**: Highlighting requires both the video pipeline and fine-tuned manual alignment
 - **Phases 4 & 5** are INDEPENDENT: Can be developed in parallel
-- **Phase 6** BLOCKS on **Phases 3, 4, 5**: Polish requires all features implemented
+- **Phase 6** BLOCKS on **Phases 3, 3a, 4, 5**: Polish requires all features implemented
 
 ### Parallel Execution Examples
 
@@ -350,19 +369,20 @@ Tasks use strict markdown checklist format for tracking:
 
 ### Suggested MVP (Minimum Viable Product)
 
-**Scope**: Phase 1 + Phase 2 + Phase 3 (Tasks T001-T067)
-**Deliverable**: CLI that processes a single audio file and generates a synchronized video
-**Value**: Demonstrates core feature (FR-001 through FR-006)
+**Scope**: Phase 1 + Phase 2 + Phase 3 (Tasks T001-T067, excluding T046/T047/T066)
+**Deliverable**: CLI that processes a single audio file and generates a video with static Hebrew text + audio
+**Value**: Demonstrates core feature (FR-001 through FR-005)
 **Duration**: Approximately 40-60 implementation hours (excluding testing time)
 
 ### Incremental Delivery Milestones
 
 1. **Milestone 1 (T001-T023)**: Project initialized, models defined, can load config and parse filenames
 2. **Milestone 2 (T024-T042)**: Audio processing, text retrieval, and alignment working independently
-3. **Milestone 3 (T043-T067)**: End-to-end pipeline produces synchronized videos (US1 complete) ← **MVP**
-4. **Milestone 4 (T068-T078)**: Metadata overlay functional (US2 complete)
-5. **Milestone 5 (T079-T094)**: Batch processing operational (US3 complete)
-6. **Milestone 6 (T095-T118)**: Production-ready with polish, documentation, full validation
+3. **Milestone 3 (T043-T067, excl. T046/T047/T066)**: End-to-end pipeline produces static text videos (US1 complete) ← **MVP**
+4. **Milestone 3a (T046, T047, T066)**: Verse highlighting added (requires spec 002 manual alignment first)
+5. **Milestone 4 (T068-T078)**: Metadata overlay functional (US2 complete)
+6. **Milestone 5 (T079-T094)**: Batch processing operational (US3 complete)
+7. **Milestone 6 (T095-T118)**: Production-ready with polish, documentation, full validation
 
 ## Success Validation
 

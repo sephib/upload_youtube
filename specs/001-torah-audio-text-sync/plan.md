@@ -7,7 +7,7 @@
   
 ## Summary  
   
-Create a system that synchronizes Hebrew text with Torah reading audio to generate videos where verses highlight in real-time as they are recited. The system will process audio files organized by Parasha and Aliyah, retrieve corresponding Hebrew text with vowels and cantillation marks, perform forced alignment at the verse level, and render 360p MP4 videos with scrolling text overlay and metadata display.  
+Create a system that generates Torah reading videos with Hebrew text displayed alongside audio. Phase 1 produces static text videos (all verses visible); Phase 2 adds dynamic verse highlighting (depends on fine-tuned alignment from spec 002). The system processes audio files organized by Parasha and Aliyah, retrieves corresponding Hebrew text with vowels and cantillation marks, performs forced alignment at the verse level, and renders 360p MP4 videos with text overlay and metadata display.
   
 ## Technical Context  
   

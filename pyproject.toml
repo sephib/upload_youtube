@@ -34,6 +34,12 @@ dependencies = [
     "pillow>=10.2.0",          # Image processing for fonts
     "loguru>=0.7.2",           # Structured logging with automatic serialization
     "python-bidi>=0.4.2",      # Bidirectional text (RTL) rendering for Hebrew
+    # Database
+    "duckdb>=1.1.0",           # Embedded analytical database
+    # YouTube Integration
+    "google-api-python-client>=2.100.0",  # YouTube Data API v3
+    "google-auth-oauthlib>=1.2.0",        # OAuth2 authentication
+    "google-auth-httplib2>=0.2.0",        # HTTP transport for auth
 ]
 
 [project.optional-dependencies]
@@ -46,6 +52,17 @@ dev = [
     "ruff>=0.2.0",
     "pre-commit>=3.6.0",
     "types-pillow>=10.2.0",
+]
+ml = [
+    "torch>=2.1.0",
+    "torchaudio>=2.1.0",
+    "whisperx>=3.1.0",
+    "transformers>=4.36.0",
+]
+app = [
+    "marimo>=0.10",
+    "anywidget>=0.9",
+    "traitlets>=5.0",
 ]
 
 [project.scripts]

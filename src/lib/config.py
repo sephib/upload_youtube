@@ -52,6 +52,13 @@ def get_timestamp_map_dir() -> Path:
     return timestamp_dir
 
 
+def get_db_path() -> Path:
+    """Get DuckDB database file path, creating parent dir if needed."""
+    db_path = Path(settings.get("db_path", "data/torah_sync.duckdb"))
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    return db_path
+
+
 def get_font_path() -> str:
     """Get Hebrew font name or path.
 

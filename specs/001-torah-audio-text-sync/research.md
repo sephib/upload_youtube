@@ -10,8 +10,11 @@
   
 **Question**: Which Python library should be used for forced alignment of Hebrew audio to text?  
   
-**Decision**: Use `aeneas` (Python wrapper for audio-text alignment)  
-  
+**Decision**: Use `aeneas` (Python wrapper for audio-text alignment)
+
+> **Detailed comparison**: See [alignment-model-comparison.md](alignment-model-comparison.md) for
+> in-depth evaluation of aeneas vs WhisperX, MFA, and wav2vec2.
+
 **Rationale**:  
 - Supports Unicode text (including Hebrew with diacritical marks)  
 - Designed specifically for audiobook synchronization (aligns text to audio timestamps)  

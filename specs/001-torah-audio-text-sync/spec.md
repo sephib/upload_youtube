@@ -17,20 +17,22 @@
   
 ## User Scenarios & Testing *(mandatory)*  
   
-### User Story 1 - View Synchronized Torah Reading Video (Priority: P1)  
-  
-A student of Torah reading wants to practice their chanting by following along with a visual guide. They need to see the Hebrew text (with vowels and cantillation marks) highlight in real-time as the reader recites each verse, creating a "follow the reader" experience.  
-  
-**Why this priority**: This is the core value proposition - enabling users to visually follow along with professional Torah readings. Without this, the feature has no purpose.  
-  
-**Independent Test**: Can be fully tested by playing a video for a single Aliyah (portion) and verifying that each verse highlights synchronously with the audio, delivering immediate educational value.  
-  
-**Acceptance Scenarios**:  
-  
-1. **Given** a video file containing a Torah reading for one Aliyah, **When** the reader begins reciting a verse, **Then** that verse is visually highlighted in the display  
-2. **Given** the reader is currently on verse 5, **When** the reader finishes verse 5 and begins verse 6, **Then** the highlight moves from verse 5 to verse 6 with smooth transition  
-3. **Given** a video is playing, **When** the user pauses the video, **Then** the current verse remains highlighted at the point of pause  
-4. **Given** Hebrew text with vowels and cantillation marks (T'amim), **When** the video displays text, **Then** all diacritical marks are clearly visible and correctly positioned  
+### User Story 1 - View Torah Reading Video with Text (Priority: P1)
+
+A student of Torah reading wants to follow along with a visual guide. They need to see the Hebrew text (with vowels and cantillation marks) displayed alongside the audio, creating a reference experience where all verses are visible while the reader recites.
+
+**Why this priority**: This is the foundational deliverable - generating a video with Hebrew text and audio. Without this, no further enhancements (highlighting, metadata) are possible.
+
+**Independent Test**: Can be fully tested by playing a video for a single Aliyah (portion) and verifying that Hebrew text is displayed clearly with proper diacritical marks while audio plays.
+
+**Phase note**: Verse highlighting (dynamic color changes synchronized to audio) is deferred to Phase 2, which depends on fine-tuned alignment via spec 002 (Manual Alignment Correction). This phase produces static text display only.
+
+**Acceptance Scenarios**:
+
+1. **Given** an audio file for one Aliyah, **When** the system processes it, **Then** an MP4 video is generated with all verses displayed as static Hebrew text with audio
+2. **Given** Hebrew text with vowels and cantillation marks (T'amim), **When** the video displays text, **Then** all diacritical marks are clearly visible and correctly positioned
+3. **Given** a generated video, **When** the user plays it, **Then** the audio is synchronized with the video duration and all verses are readable
+4. **Given** more verses than fit on screen, **When** the video is generated, **Then** text layout accommodates all verses with proper spacing  
   
 ---  
   
@@ -83,10 +85,12 @@ A content creator wants to generate synchronized videos for all Torah portions (
 - **FR-002**: System MUST retrieve Hebrew text with vowels (Nikkud) and cantillation marks (T'amim) for any specified Torah portion using batch retrieval strategies to minimize API requests  
 - **FR-002a**: System MUST fail processing with a clear error message when Hebrew text source is unavailable or returns incomplete data, logging the failure for retry  
 - **FR-003**: System MUST synchronize Hebrew text to audio at the verse (Pasuk) level, identifying start and end timestamps for each verse  
-- **FR-004**: System MUST generate video output in MP4 format at 360p (640x360) resolution where the current verse is visually highlighted as it is being read  
-- **FR-005**: System MUST display Hebrew text in a clear, high-contrast font that preserves diacritical marks  
-- **FR-005a**: System MUST display multiple verses on screen simultaneously with automatic scrolling to keep the currently highlighted verse centered in the visible area  
-- **FR-006**: System MUST differentiate the currently active verse from upcoming or past verses through visual styling (highlighting, opacity changes, or color)  
+- **FR-004**: System MUST generate video output in MP4 format at 360p (640x360) resolution with Hebrew text displayed alongside audio
+- **FR-004a** *(Phase 2)*: System MUST visually highlight the current verse as it is being read (depends on fine-tuned alignment from spec 002)
+- **FR-005**: System MUST display Hebrew text in a clear, high-contrast font that preserves diacritical marks
+- **FR-005a**: System MUST display multiple verses on screen simultaneously with proper spacing and layout
+- **FR-005b** *(Phase 2)*: System MUST implement automatic scrolling to keep the currently highlighted verse centered in the visible area
+- **FR-006** *(Phase 2)*: System MUST differentiate the currently active verse from upcoming or past verses through visual styling (highlighting, opacity changes, or color)  
 - **FR-007**: System MUST overlay metadata showing the Parasha name, Aliyah name, and current verse reference  
 - **FR-008**: System MUST process audio files that correspond to individual Aliyot (one Aliyah per audio file)  
 - **FR-010**: System MUST use legally permissible Hebrew text sources (open-source or appropriately licensed)  
@@ -115,14 +119,15 @@ A content creator wants to generate synchronized videos for all Torah portions (
   
 ### Measurable Outcomes  
   
-- **SC-001**: A viewer can follow along with the highlighted text and identify which verse is being read at any moment during playback without prior knowledge of the audio  
-- **SC-002**: Hebrew text rendering at 360p resolution preserves all vowel points (Nikkud) and cantillation marks (T'amim) with sufficient clarity for reading practice  
-- **SC-003**: Verse highlighting transitions occur within 0.5 seconds of the actual verse boundary in the audio (perceived as real-time synchronization)  
+- **SC-001**: A viewer can see all Hebrew text clearly displayed while audio plays, enabling them to follow along with the reading
+- **SC-001a** *(Phase 2)*: A viewer can identify which verse is being read at any moment via dynamic highlighting
+- **SC-002**: Hebrew text rendering at 360p resolution preserves all vowel points (Nikkud) and cantillation marks (T'amim) with sufficient clarity for reading practice
+- **SC-003** *(Phase 2)*: Verse highlighting transitions occur within 0.5 seconds of the actual verse boundary in the audio (perceived as real-time synchronization, depends on fine-tuned alignment from spec 002)  
 - **SC-004**: Metadata (Parasha, Aliyah, verse reference) is visible and readable throughout the entire video playback  
 - **SC-005**: The system successfully processes and generates synchronized videos for at least one complete Parasha (with 7 Aliyot) as proof of scalability  
 - **SC-006**: Generated videos comply with copyright requirements (open-source text, proper attribution for audio)  
 - **SC-007**: Users can identify which Aliyah they are watching within 5 seconds of starting video playback  
-- **SC-008**: 95% of verse boundaries align accurately with the audio (allowing for minor timing variations due to reading style)  
+- **SC-008** *(Phase 2)*: 95% of verse boundaries align accurately with the audio (allowing for minor timing variations due to reading style, requires manual alignment correction from spec 002)  
   
 ## Assumptions  
   
