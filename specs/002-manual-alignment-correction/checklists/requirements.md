@@ -1,7 +1,10 @@
 # Specification Quality Checklist: Manual Alignment Correction
 
+<!-- Edited by Claude Opus 4.6 -->
+
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-03-08
+**Updated**: 2026-03-15
 **Feature**: [spec.md](../spec.md)
 
 ## Content Quality
@@ -44,8 +47,8 @@
 - Success criteria avoid implementation details (e.g., "Users can load, correct, and save..." not "API responds in X ms")
 - All 5 user stories have acceptance scenarios with Given-When-Then format
 - Edge cases section covers boundary conditions (zero duration, missing data, file locks, schema mismatches)
-- Scope is bounded to manual correction of existing TimestampMaps (excludes automated re-alignment, waveform visualization)
-- Dependencies identified implicitly (requires existing TimestampMap model, pipeline integration)
+- Scope is bounded to manual correction of existing AlignmentRuns (excludes automated re-alignment, waveform visualization)
+- Dependencies identified implicitly (requires existing AlignmentRun model, pipeline integration)
 
 ### Feature Readiness: ✅ PASS
 - Each functional requirement maps to user stories (FR-020-022 → US1, FR-026-027 → US2, FR-028 → US3)

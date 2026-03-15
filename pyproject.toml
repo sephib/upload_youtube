@@ -19,7 +19,7 @@ classifiers = [
 dependencies = [
     # Core dependencies
     "numpy>=1.26.0",
-    # aeneas: installed manually from patched fork - see README
+    "aeneas>=1.7.4",           # Forced alignment (audio-text sync)
     "moviepy>=1.0.3",          # Video rendering
     "httpx>=0.27.0",           # HTTP client for Sefaria API
     "pydub>=0.25.1",           # Audio conversion
@@ -61,8 +61,6 @@ ml = [
 ]
 app = [
     "marimo>=0.10",
-    "anywidget>=0.9",
-    "traitlets>=5.0",
 ]
 
 [project.scripts]
@@ -73,11 +71,11 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 # Edited by Claude Code
-# aeneas requires manual installation from py312_support fork:
-# 1. brew install espeak ffmpeg
-# 2. git clone -b py312_support https://github.com/avinashvarna/aeneas.git /tmp/aeneas
-# 3. cd /tmp/aeneas && sed -i '' '38,54s/^/#/' setup.py && sed -i '' '61s/^/#/' setup.py
-# 4. LDFLAGS="-L/opt/homebrew/opt/espeak/lib" CPPFLAGS="-I/opt/homebrew/opt/espeak/include" uv pip install /tmp/aeneas
+# aeneas requires system dependencies: brew install espeak ffmpeg
+# The Festival (cfw) extension is excluded via override below
+
+[tool.uv.sources]
+aeneas = { path = "vendor/aeneas", editable = false }
 
 [tool.hatch.build.targets.wheel]
 packages = ["src"]

@@ -90,11 +90,10 @@ logger.debug(f"user_id: {user_id}, status: {status}, count: {count}")  # BAD log
 
 
 ## Active Technologies
-- Python 3.13 + aeneas (forced alignment), moviepy (video rendering), httpx (Sefaria API client), pydub (audio conversion) (001-torah-audio-text-sync)
-- File-based (audio inputs, timestamp maps as JSON, video outputs) (001-torah-audio-text-sync)
 - Python 3.13 + aeneas (forced alignment), moviepy (video rendering), httpx (Sefaria API client), pydub (audio conversion), dynaconf (configuration) (001-torah-audio-text-sync)
+- DuckDB (persistence: playlists, alyot, alya_ranges, alya_audio, alya_videos, alignment_runs, pasuk_alignments) (001/002)
 - Python 3.13 + marimo (>=0.10), anywidget (>=0.9), traitlets (>=5.0), wavesurfer.js (CDN, v7), pydantic (existing) (002-manual-alignment-correction)
-- File-based (JSON for TimestampMap, CSV for bulk export/import) (002-manual-alignment-correction)
+- CSV for bulk export/import of PasukAlignments (002-manual-alignment-correction)
 
 ## Recent Changes
 - 001-torah-audio-text-sync: Added Python 3.13 + aeneas (forced alignment), moviepy (video rendering), httpx (Sefaria API client), pydub (audio conversion)

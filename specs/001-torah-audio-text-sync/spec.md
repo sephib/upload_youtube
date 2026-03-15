@@ -1,8 +1,11 @@
-# Feature Specification: Automated Torah Reading Audio-Visual Synchronization  
-  
-**Feature Branch**: `001-torah-audio-text-sync`  
-**Created**: 2026-01-31  
-**Status**: Draft  
+# Feature Specification: Automated Torah Reading Audio-Visual Synchronization
+
+<!-- Edited by Claude Opus 4.6 -->
+
+**Feature Branch**: `001-torah-audio-text-sync`
+**Created**: 2026-01-31
+**Updated**: 2026-03-15
+**Status**: Draft
 **Input**: User description: "Automated Torah Reading Audio-Visual Synchronization - Create synchronized videos of Torah readings where Hebrew text highlights in real-time following the audio"  
   
 ## Clarifications  
@@ -103,17 +106,19 @@ A content creator wants to generate synchronized videos for all Torah portions (
 - **PR-002**: System SHOULD fetch entire Aliyah verse ranges in a single API request rather than per-verse requests
 - **PR-003**: System SHOULD reduce API calls by at least 80% compared to naive per-verse retrieval
 
-### Key Entities  
-  
-- **Parasha**: A weekly Torah portion (e.g., "Haazinu", "Bereshit"). Contains multiple Aliyot. Identified by name and book/chapter/verse range.  
-- **Aliyah**: A subdivision of a Parasha, traditionally one of seven sections (Rishon, Sheni, Shlishi, Revi'i, Chamishi, Shishi, Shevi'i). Contains multiple verses. Associated with one audio file.
-- **AliyahRange**: Configuration mapping each Parasha/Aliyah combination to its verse range (book, chapter_start, verse_start, chapter_end, verse_end). Stored in `data/aliyah_ranges.toml`. Used by batch text fetchers to retrieve all verses for an Aliyah in a single API request.
-- **Pasuk (Verse)**: The atomic unit of synchronization. A single verse of Hebrew text with vowels and cantillation marks. Has a start timestamp and end timestamp within an audio file.  
-- **Haftara**: A weekly Nevieim portion that is Identified by name and book/chapter/verse range.  
-- **Audio Source**: A recording file (MP4/MP3/WAV) containing the recitation of one Aliyah. Sourced from Yoseph Joseph Bodenhaimer's recordings. Must follow standardized naming convention: "פרשת {Parasha} - {Aliyah} - נוסח אשכנז.{extension}" (e.g., "פרשת האזינו - ראשון - נוסח אשכנז.mp4").  
-- **Hebrew Text Source**: Database or API providing vowelized Hebrew text with cantillation marks (e.g., Sefaria). Must be open-source or properly licensed.  
-- **Synchronized Video**: Output video file in MP4 format at 360p (640x360) resolution, combining audio, Hebrew text display, verse highlighting, and metadata overlay.  
-- **Timestamp Map**: Data structure mapping each Pasuk to its precise start and end time in the audio, enabling synchronization.  
+### Key Entities
+
+*Implementation names in parentheses. See `tmp/db_erd.md` (ERD v2) for full schema.*
+
+- **Playlist** (replaces Parasha): A weekly Torah portion (e.g., "Haazinu"). Contains multiple Aliyot. Identified by name and book/chapter/verse range. Maps to a YouTube playlist.
+- **Alya** (replaces Aliyah): A subdivision of a Parasha, `order_num` 1-7 for Torah aliyot, 8 for maftir, 9 for haftara. Contains multiple verses. Associated with one audio file.
+- **AlyaRange** (replaces AliyahRange): Verse range(s) for an alya. Supports compound Haftarot with multiple non-consecutive ranges. Stored in DuckDB `alya_ranges` table.
+- **PasukAlignment** (replaces VerseTimestamp): Per-verse alignment row — reference, hebrew_text, start_time, end_time, confidence. Tracks `original_start_time`/`original_end_time` for corrections.
+- **AlignmentRun** (replaces TimestampMap): Result of a forced alignment run. Links to `alya_audio`. Produces many `PasukAlignment` rows.
+- **AlyaAudio** (replaces AudioSource): Audio file metadata (MP4/MP3/WAV). One-to-one with Alya. Sourced from Yoseph Joseph Bodenhaimer's recordings.
+- **AlyaVideo** (replaces SynchronizedVideo): Output video in MP4 at 360p (640x360). One-to-one with Alya.
+- **Hebrew Text Source**: Protocol interface for vowelized Hebrew text with cantillation marks (Sefaria API).
+
   
 ## Success Criteria *(mandatory)*  
   

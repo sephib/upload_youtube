@@ -1,371 +1,197 @@
-# Data Model: Automated Torah Reading Audio-Visual Synchronization  
-  
-**Date**: 2026-01-31  
-**Feature**: 001-torah-audio-text-sync  
-**Purpose**: Define core entities and their relationships for Torah audio-text synchronization  
-  
-## Entity Definitions  
-  
-### Parasha  
-  
-Represents a weekly Torah portion from the Hebrew Bible.  
-  
-**Fields**:  
-- `name: str` - Name of the Parasha (e.g., "Haazinu", "Bereshit")  
-- `book: str` - Torah book name (e.g., "Deuteronomy", "Genesis")  
-- `chapter_start: int` - Starting chapter number  
-- `verse_start: int` - Starting verse number  
-- `chapter_end: int` - Ending chapter number  
-- `verse_end: int` - Ending verse number  
-- `aliyot: list[Aliyah]` - List of Aliyot for this Parasha (typically 7)  
-  
-**Validation Rules**:  
-- `name` must be non-empty  
-- `chapter_start` ≤ `chapter_end`  
-- If `chapter_start == chapter_end`, then `verse_start` < `verse_end`  
-- `aliyot` length typically 7 (can vary for special Parashot)  
-  
-**Relationships**:  
-- **Contains many** Aliyot (1:N)  
-  
-### Aliyah  
-  
-Represents a subdivision of a Parasha, traditionally one of seven sections.  
-  
-**Fields**:  
-- `name: str` - Aliyah name (e.g., "Rishon", "Sheni", "Shlishi", "Revi'i", "Chamishi", "Shishi", "Shevi'i", "Maftir")  
-- `parasha_name: str` - Parent Parasha name (foreign key)  
-- `order: int` - Sequence number within Parasha (1-7 typically, 8 for Maftir)  
-- `verses: list[Pasuk]` - List of verses in this Aliyah  
-- `audio_file_path: Path` - Path to audio recording file  
-- `duration_seconds: float` - Total audio duration  
-  
-**Validation Rules**:  
-- `name` must be one of canonical Aliyah names  
-- `order` must be 1-8  
-- `audio_file_path` must exist and follow naming convention `{parasha_name}_{aliyah_name}.{ext}`  
-- `duration_seconds` > 0  
-  
-**Relationships**:  
-- **Belongs to one** Parasha (N:1)  
-- **Contains many** Pasuk (verses) (1:N)  
-- **Has one** TimestampMap (1:1)  
-  
-**State Transitions**:  
-- `pending` → Audio file identified, not yet processed  
-- `aligning` → Forced alignment in progress  
-- `aligned` → Timestamps generated successfully  
-- `rendering` → Video generation in progress  
-- `completed` → Video output ready  
-- `failed` → Processing error occurred  
-  
-### Pasuk (Verse)  
-  
-Represents a single verse of Hebrew text with vowels and cantillation marks.  
-  
-**Fields**:  
-- `reference: str` - Canonical verse reference (e.g., "Deuteronomy 32:1")  
-- `book: str` - Book name (e.g., "Deuteronomy")  
-- `chapter: int` - Chapter number  
-- `verse: int` - Verse number within chapter  
-- `hebrew_text: str` - Hebrew text with Nikkud (vowels) and T'amim (cantillation marks)  
-- `start_timestamp: float` - Start time in audio (seconds)  
-- `end_timestamp: float` - End time in audio (seconds)  
-- `aliyah_name: str` - Parent Aliyah name (foreign key)  
-  
-**Validation Rules**:  
-- `reference` format: `{Book} {chapter}:{verse}`  
-- `chapter` > 0, `verse` > 0  
-- `hebrew_text` must contain Hebrew Unicode characters (U+0590 to U+05FF range)  
-- `start_timestamp` ≥ 0  
-- `end_timestamp` > `start_timestamp`  
-- `end_timestamp` - `start_timestamp` should be reasonable (e.g., 1-30 seconds per verse)  
-  
-**Relationships**:  
-- **Belongs to one** Aliyah (N:1)  
-  
-### Haftara  
-  
-Represents a weekly Prophets (Neviim) portion read after the Torah portion.  
-  
-**Fields**:  
-- `name: str` - Haftara name (typically matches associated Parasha)  
-- `book: str` - Prophets book name (e.g., "Isaiah", "Jeremiah")  
-- `chapter_start: int` - Starting chapter number  
-- `verse_start: int` - Starting verse number  
-- `chapter_end: int` - Ending chapter number  
-- `verse_end: int` - Ending verse number  
-- `parasha_name: str` - Associated Parasha name (foreign key)  
-  
-**Validation Rules**:  
-- Same chapter/verse validation as Parasha  
-- `book` must be from Neviim (Prophets) section  
-  
-**Relationships**:  
-- **Associated with one** Parasha (1:1 or 0:1 - some Parashot have multiple Haftarot)  
-  
-**Note**: Haftara processing follows the same pipeline as Aliyot but is tracked separately.
+# Data Model: Automated Torah Reading Audio-Visual Synchronization
 
-### AliyahRange
+<!-- Edited by Claude Opus 4.6 -->
 
-Represents the verse range configuration for a specific Parasha/Aliyah combination.
+**Date**: 2026-03-15
+**Feature**: 001-torah-audio-text-sync
+**Purpose**: Define core entities and their relationships for Torah audio-text synchronization
+**Source of truth**: `tmp/db_erd.md` (ERD v2)
+
+## Overview
+
+All entities are flat, DuckDB-storable models using a repository pattern for persistence.
+See `specs/002-manual-alignment-correction/data-model.md` for full entity definitions
+including per-pasuk alignment and correction tracking.
+
+## Entity Definitions
+
+### Playlist (replaces Parasha)
+
+Represents a YouTube playlist for a weekly Torah portion.
+
+**Table**: `playlists`
+
+| Column              | Type      | Constraints               |
+|---------------------|-----------|---------------------------|
+| id                  | INTEGER   | PK, auto-increment        |
+| name                | VARCHAR   | NOT NULL, UNIQUE          |
+| book                | VARCHAR   | NOT NULL                  |
+| chapter_start       | INTEGER   | NOT NULL, > 0             |
+| verse_start         | INTEGER   | NOT NULL, > 0             |
+| chapter_end         | INTEGER   | NOT NULL, > 0             |
+| verse_end           | INTEGER   | NOT NULL, > 0             |
+| youtube_playlist_id | VARCHAR   | NULLABLE                  |
+| created_at          | TIMESTAMP | NOT NULL, DEFAULT now()   |
+
+### Alya (replaces Aliyah)
+
+Core processing unit — one Aliyah within a Parasha. Haftara is stored as `order_num=9`,
+maftir as `order_num=8`.
+
+**Table**: `alyot`
+
+| Column         | Type      | Constraints                          |
+|----------------|-----------|--------------------------------------|
+| id             | INTEGER   | PK, auto-increment                   |
+| playlist_id    | INTEGER   | FK → playlists.id, NOT NULL          |
+| name           | VARCHAR   | NOT NULL (Hebrew name, e.g. "ראשון") |
+| order_num      | INTEGER   | NOT NULL, 1-9 (9 = haftara)         |
+| state          | VARCHAR   | NOT NULL, DEFAULT 'pending'          |
+| created_at     | TIMESTAMP | NOT NULL, DEFAULT now()              |
+
+**Unique**: (playlist_id, order_num)
+
+**State transitions**:
+- `pending` → Audio file identified, not yet processed
+- `aligning` → Forced alignment in progress
+- `aligned` → Timestamps generated successfully
+- `rendering` → Video generation in progress
+- `completed` → Video output ready
+- `failed` → Processing error occurred
+
+### AlyaRange (replaces AliyahRange config)
+
+Verse range for an alya. Torah aliyot have one range; Haftarot may have
+multiple non-consecutive ranges (compound readings).
+
+**Table**: `alya_ranges`
+
+| Column        | Type      | Constraints                    |
+|---------------|-----------|--------------------------------|
+| id            | INTEGER   | PK, auto-increment             |
+| alya_id       | INTEGER   | FK → alyot.id, NOT NULL        |
+| range_order   | INTEGER   | NOT NULL, 1-based              |
+| book          | VARCHAR   | NOT NULL                       |
+| chapter_start | INTEGER   | NOT NULL, > 0                  |
+| verse_start   | INTEGER   | NOT NULL, > 0                  |
+| chapter_end   | INTEGER   | NOT NULL, > 0                  |
+| verse_end     | INTEGER   | NOT NULL, > 0                  |
+| created_at    | TIMESTAMP | NOT NULL, DEFAULT now()        |
+
+**Unique**: (alya_id, range_order)
+
+### AlyaAudio (replaces AudioSource)
+
+Audio file metadata for an Alya.
+
+**Table**: `alya_audio`
+
+| Column           | Type      | Constraints                       |
+|------------------|-----------|-----------------------------------|
+| id               | INTEGER   | PK, auto-increment                |
+| alya_id          | INTEGER   | FK → alyot.id, NOT NULL, UNIQUE   |
+| file_path        | VARCHAR   | NOT NULL                          |
+| format           | VARCHAR   | NOT NULL (mp3, mp4, wav)          |
+| duration_seconds | DOUBLE    | NOT NULL, > 0                     |
+| sample_rate      | INTEGER   | NOT NULL, 16000-48000             |
+| channels         | INTEGER   | NOT NULL, 1-2                     |
+| attribution      | VARCHAR   | DEFAULT ''                        |
+| created_at       | TIMESTAMP | NOT NULL, DEFAULT now()           |
+
+### AlyaVideo (replaces SynchronizedVideo)
+
+Rendered video file for an Alya. One-to-one with Alya.
+
+**Table**: `alya_videos`
+
+| Column           | Type      | Constraints                       |
+|------------------|-----------|-----------------------------------|
+| id               | INTEGER   | PK, auto-increment                |
+| alya_id          | INTEGER   | FK → alyot.id, NOT NULL, UNIQUE   |
+| file_path        | VARCHAR   | NOT NULL                          |
+| format           | VARCHAR   | NOT NULL, DEFAULT 'mp4'           |
+| resolution_w     | INTEGER   | NOT NULL                          |
+| resolution_h     | INTEGER   | NOT NULL                          |
+| frame_rate       | INTEGER   | NOT NULL, DEFAULT 30              |
+| codec            | VARCHAR   | NOT NULL, DEFAULT 'h264'          |
+| duration_seconds | DOUBLE    | NOT NULL, > 0                     |
+| youtube_video_id | VARCHAR   | NULLABLE                          |
+| created_at       | TIMESTAMP | NOT NULL, DEFAULT now()           |
+
+### AlignmentRun (replaces TimestampMap)
+
+Result of a forced alignment run. Links to `alya_audio` (the source audio).
+
+**Table**: `alignment_runs`
+
+| Column              | Type      | Constraints                       |
+|---------------------|-----------|-----------------------------------|
+| id                  | INTEGER   | PK, auto-increment                |
+| alya_audio_id       | INTEGER   | FK → alya_audio.id, NOT NULL      |
+| alignment_quality   | DOUBLE    | NOT NULL, 0.0-1.0                 |
+| verse_count         | INTEGER   | NOT NULL, > 0                     |
+| manually_corrected  | BOOLEAN   | NOT NULL, DEFAULT false           |
+| corrected_at        | TIMESTAMP | NULLABLE                          |
+| backup_path         | VARCHAR   | NULLABLE                          |
+| original_quality    | DOUBLE    | NULLABLE, 0.0-1.0                 |
+| generated_at        | TIMESTAMP | NOT NULL, DEFAULT now()           |
+
+### PasukAlignment (replaces VerseTimestamp embedded in JSON)
+
+Individual verse alignment within an alignment run. Replaces the `timestamps_json`
+blob with per-verse rows for SQL queries and individual correction tracking.
+
+**Table**: `pasuk_alignments`
+
+| Column              | Type      | Constraints                       |
+|---------------------|-----------|-----------------------------------|
+| id                  | INTEGER   | PK, auto-increment                |
+| alignment_run_id    | INTEGER   | FK → alignment_runs.id, NOT NULL  |
+| reference           | VARCHAR   | NOT NULL (e.g. "Deuteronomy 32:1")|
+| hebrew_text         | VARCHAR   | NOT NULL (verse text with nikkud) |
+| verse_order         | INTEGER   | NOT NULL (position within alya)   |
+| start_time          | DOUBLE    | NOT NULL, >= 0 (seconds)          |
+| end_time            | DOUBLE    | NOT NULL, > start_time (seconds)  |
+| confidence          | DOUBLE    | NOT NULL, 0.0-1.0                 |
+| original_start_time | DOUBLE    | NULLABLE (pre-correction value)   |
+| original_end_time   | DOUBLE    | NULLABLE (pre-correction value)   |
+| manually_corrected  | BOOLEAN   | NOT NULL, DEFAULT false           |
+
+**Unique**: (alignment_run_id, verse_order)
+
+### Pasuk (Verse) — transient model
+
+Used transiently during text fetching from Sefaria, not stored in DB.
 
 **Fields**:
-- `parasha_name: str` - Parasha name in Hebrew (e.g., "האזינו")
-- `aliyah_name: str` - Aliyah name in Hebrew (e.g., "ראשון", "שני")
-- `book: str` - Torah book name in English (e.g., "Deuteronomy", "Genesis")
-- `chapter_start: int` - Starting chapter number
-- `verse_start: int` - Starting verse number
-- `chapter_end: int` - Ending chapter number
-- `verse_end: int` - Ending verse number
+- `reference: str` - Canonical verse reference (e.g., "Deuteronomy 32:1")
+- `book: str` - Book name
+- `chapter: int` - Chapter number (> 0)
+- `verse: int` - Verse number (> 0)
+- `hebrew_text: str` - Hebrew text with Nikkud and T'amim
 
-**Validation Rules**:
-- `chapter_start` ≤ `chapter_end`
-- If `chapter_start == chapter_end`, then `verse_start` < `verse_end`
-- `parasha_name` and `aliyah_name` must be non-empty
-- `book` must be valid Torah book name
+### HebrewTextSource — protocol
 
-**Relationships**:
-- **Maps to one** Aliyah (1:1 via parasha_name + aliyah_name key)
+Protocol interface for text retrieval (Sefaria API).
 
-**Storage**:
-- Stored in `data/aliyah_ranges.toml` as configuration (not runtime data)
-- Format: `[parasha_name.aliyah_name]` TOML table per range
+## Entity Relationship Diagram
 
-**Example**:
-```toml
-[haazinu.rishon]
-book = "Deuteronomy"
-chapter_start = 32
-verse_start = 1
-chapter_end = 32
-verse_end = 6
+```text
+Playlist (1) ────< (N) Alya
+                        │
+                        ├────< (N) AlyaRange     (1:N, 1+ verse ranges)
+                        ├──── (1) AlyaAudio      (1:1)
+                        │           │
+                        │           └────< (N) AlignmentRun (1:N, one per attempt)
+                        │                        │
+                        │                        └────< (N) PasukAlignment (1:N, one per verse)
+                        │
+                        └──── (1) AlyaVideo      (1:1)
 ```
 
-### Audio Source  
-  
-Represents an audio recording file for one Aliyah.  
-  
-**Fields**:  
-- `file_path: Path` - Absolute path to audio file  
-- `format: str` - File extension (e.g., "mp4", "mp3", "wav")  
-- `duration_seconds: float` - Total audio duration  
-- `sample_rate: int` - Audio sample rate in Hz (e.g., 44100, 48000)  
-- `channels: int` - Number of audio channels (1 for mono, 2 for stereo)  
-- `attribution: str` - Source attribution (e.g., "Yoseph Joseph Bodenhaimer")  
-- `parasha_name: str` - Extracted from filename  
-- `aliyah_name: str` - Extracted from filename  
-  
-**Validation Rules**:  
-- `file_path` must exist on filesystem  
-- `format` must be one of: ["mp4", "mp3", "wav"]  
-- Filename must match pattern: `{parasha_name}_{aliyah_name}.{format}`  
-- `duration_seconds` > 0  
-- `sample_rate` typically 16000-48000 Hz  
-- `channels` should be 1 (mono preferred for alignment)  
-  
-**Relationships**:  
-- **Belongs to one** Aliyah (1:1)  
-  
-### Hebrew Text Source  
-  
-Represents the source of Hebrew text (Sefaria API).  
-  
-**Fields**:  
-- `base_url: str` - API base URL (e.g., "https://www.sefaria.org/api")  
-- `text_version: str` - Specific text version to use (e.g., "Tanach with Ta'amei Hamikra")  
-- `language: str` - Language code (e.g., "he" for Hebrew)  
-- `include_vowels: bool` - Whether to include Nikkud (vowel points)  
-- `include_cantillation: bool` - Whether to include T'amim (cantillation marks)  
-  
-**Validation Rules**:  
-- `base_url` must be valid URL  
-- `include_vowels` and `include_cantillation` must both be `true` for this feature  
-  
-**Relationships**:
-- **Provides text for many** Pasuk (1:N via API calls)
+See `tmp/db_erd.md` for the full Mermaid ERD.
 
-### ParashaTextFetcher
-
-Service component that fetches Hebrew text for entire Aliyot using batch retrieval.
-
-**Fields**:
-- `client: HebrewTextSource` - Underlying text source client (e.g., SefariaClient)
-- `ranges: dict[tuple[str, str], AliyahRange]` - Loaded Aliyah range mappings (key: (parasha_name, aliyah_name))
-- `config_path: Path` - Path to `aliyah_ranges.toml` configuration file
-
-**Methods**:
-- `load_ranges()` - Load Aliyah range configuration from TOML
-- `fetch_aliyah_text(parasha_name, aliyah_name)` - Fetch all verses for Aliyah using batch request
-- `get_range_for_aliyah(parasha_name, aliyah_name)` - Lookup verse range from configuration
-
-**Validation Rules**:
-- Configuration file must exist at initialization
-- All Parasha/Aliyah combinations must have valid ranges
-- Batch-fetched text must validate (Nikkud + T'amim present)
-
-**Relationships**:
-- **Uses one** HebrewTextSource implementation (composition)
-- **Loads many** AliyahRange configurations (1:N)
-- **Provides text for** ProcessingPipeline (service dependency)
-
-**Design Rationale**:
-- **Decoupled from Pipeline**: Fetcher is standalone service, testable independently
-- **Configuration-Driven**: Range mappings externalized to TOML (easily maintainable)
-- **Performance-Optimized**: Reduces API calls by 86-97% vs. per-verse retrieval
-- **Backward Compatible**: Implements same `HebrewTextSource` protocol as SefariaClient
-
-### Synchronized Video  
-  
-Represents the output video file with highlighted text overlay.  
-  
-**Fields**:  
-- `file_path: Path` - Output video file path  
-- `format: str` - Video container format ("mp4")  
-- `resolution: tuple[int, int]` - Video resolution (640, 360) for 360p  
-- `frame_rate: int` - Frames per second (30 fps)  
-- `codec: str` - Video codec ("h264")  
-- `duration_seconds: float` - Total video duration (matches audio)  
-- `parasha_name: str` - Associated Parasha  
-- `aliyah_name: str` - Associated Aliyah  
-- `created_at: datetime` - Timestamp of video generation  
-  
-**Validation Rules**:  
-- `resolution` must be (640, 360)  
-- `format` must be "mp4"  
-- `frame_rate` should be 30  
-- `duration_seconds` must match source audio duration  
-- Output filename pattern: `{parasha_name}_{aliyah_name}_sync.mp4`  
-  
-**Relationships**:  
-- **Generated from one** Aliyah (1:1)  
-- **Uses one** TimestampMap (1:1)  
-  
-### Timestamp Map  
-  
-Represents the mapping of each verse to its precise audio timestamps.  
-  
-**Fields**:  
-- `parasha_name: str` - Parasha name  
-- `aliyah_name: str` - Aliyah name  
-- `audio_file_path: Path` - Source audio file  
-- `audio_duration_seconds: float` - Total audio duration  
-- `verse_timestamps: list[VerseTimestamp]` - List of verse-to-timestamp mappings  
-- `alignment_quality: float` - Alignment confidence score (0.0-1.0)  
-- `generated_at: datetime` - When alignment was performed  
-- `manual_corrections: int` - Count of manually adjusted timestamps  
-  
-**Validation Rules**:  
-- `verse_timestamps` must be sorted by `start_timestamp` (monotonically increasing)  
-- No timestamp gaps > 5 seconds (indicates missing verse)  
-- No timestamp overlaps (end of verse N < start of verse N+1)  
-- `alignment_quality` should be > 0.85 for acceptable results  
-- First verse `start_timestamp` should be near 0.0  
-- Last verse `end_timestamp` should be near `audio_duration_seconds`  
-  
-**Relationships**:  
-- **Belongs to one** Aliyah (1:1)  
-- **Contains many** VerseTimestamp (1:N)  
-  
-**Storage Format**: JSON file at `outputs/{parasha_name}_{aliyah_name}_timestamps.json`  
-  
-### VerseTimestamp  
-  
-Embedded object within TimestampMap (not a top-level entity).  
-  
-**Fields**:  
-- `reference: str` - Verse reference (e.g., "Deuteronomy 32:1")  
-- `hebrew_text: str` - Hebrew text (for debugging/validation)  
-- `start_sec: float` - Start time in audio (seconds)  
-- `end_sec: float` - End time in audio (seconds)  
-  
-**Validation Rules**:  
-- `start_sec` ≥ 0  
-- `end_sec` > `start_sec`  
-- `end_sec - start_sec` typically 1-30 seconds  
-  
-## Entity Relationship Diagram  
-  
-```text  
-Parasha (1) ──────< (N) Aliyah (1) ──────< (N) Pasuk  
-    │                      │  
-    │                      │  
-    │                      ├──────< (1) Audio Source
-    │                      │
-    │                      ├──────< (1) AliyahRange [config mapping]
-    │                      │
-    │                      ├──────< (1) Timestamp Map (1) ──────< (N) VerseTimestamp  
-    │                      │  
-    │                      └──────< (1) Synchronized Video  
-    │  
-    └──────< (1) Haftara  
-  
-  
-Hebrew Text Source (1) ──────< (N) Pasuk [via API calls]
-                  ▲
-                  │
-                  │ (uses)
-                  │
-       ParashaTextFetcher (1) ──────< (N) AliyahRange [loads config]
-```  
-  
-## Implementation Notes  
-  
-### Pydantic Model Examples  
-  
-```python  
-from pydantic import BaseModel, Field, validator  
-from pathlib import Path  
-from datetime import datetime  
-  
-class Pasuk(BaseModel):  
-    reference: str  
-    book: str  
-    chapter: int = Field(gt=0)  
-    verse: int = Field(gt=0)  
-    hebrew_text: str  
-    start_timestamp: float = Field(ge=0.0)  
-    end_timestamp: float  
-    aliyah_name: str  
-  
-    @validator('end_timestamp')  
-    def validate_end_after_start(cls, v, values):  
-        if 'start_timestamp' in values and v <= values['start_timestamp']:  
-            raise ValueError('end_timestamp must be > start_timestamp')  
-        return v  
-  
-class VerseTimestamp(BaseModel):  
-    reference: str  
-    hebrew_text: str  
-    start_sec: float = Field(ge=0.0)  
-    end_sec: float  
-  
-    @validator('end_sec')  
-    def validate_duration(cls, v, values):  
-        if 'start_sec' in values and v <= values['start_sec']:  
-            raise ValueError('end_sec must be > start_sec')  
-        return v  
-  
-class TimestampMap(BaseModel):  
-    parasha_name: str  
-    aliyah_name: str  
-    audio_file_path: Path  
-    audio_duration_seconds: float = Field(gt=0.0)  
-    verse_timestamps: list[VerseTimestamp]  
-    alignment_quality: float = Field(ge=0.0, le=1.0)  
-    generated_at: datetime  
-    manual_corrections: int = Field(ge=0, default=0)  
-```  
-  
-### Key Design Decisions  
-  
-1. **Immutable Entities**: Parasha, Aliyah metadata are read-only after initialization  
-2. **Validation on Construction**: Use Pydantic validators to enforce constraints early  
-3. **File Path Handling**: Use `pathlib.Path` for cross-platform compatibility  
-4. **JSON Serialization**: Pydantic provides automatic `model_dump_json()` for storage  
-5. **State Machine**: Aliyah state transitions tracked for pipeline monitoring
-
-### Text Fetching Architecture
+## Text Fetching Architecture
 
 **Component Hierarchy**:
 
@@ -381,55 +207,20 @@ ProcessingPipeline
     └─> (alternative) SefariaClient (direct per-verse fallback)
 ```
 
-**When to Use Each Component**:
+The text fetcher makes one Sefaria API call per `alya_ranges` row and concatenates
+the results. Both Torah and Haftara use the same `book chapter:verse` API format.
 
-| Component              | Use Case                                  | API Calls (Haazinu Rishon) |
-|------------------------|-------------------------------------------|-----------------------------|
-| `ParashaTextFetcher`   | Normal Aliyah processing (known range)    | 1 batch call                |
-| `CachedSefariaClient`  | Re-processing with cache hits             | 0 (cached)                  |
-| `SefariaClient`        | Testing, validation, dynamic verse fetch  | 1 per verse (6 total)       |
+**Sefaria API notes**:
+- Torah verses: `Deuteronomy 32:1-6` → flat array of verse strings
+- Haftara verses: `II Samuel 22:1-51` → identical structure
+- Cross-chapter: `I Kings 18:46-19:21` → `isSpanning: true`, `spanningRefs` breaks into parts
+- Both use `sectionNames: ["Chapter", "Verse"]`, `addressTypes: ["Perek", "Pasuk"]`
 
-**Configuration Loading**:
+## Key Design Decisions
 
-```python
-# data/aliyah_ranges.toml structure
-[haazinu.rishon]
-book = "Deuteronomy"
-chapter_start = 32
-verse_start = 1
-chapter_end = 32
-verse_end = 6
-
-# Loaded as:
-{
-    ("האזינו", "ראשון"): AliyahRange(
-        parasha_name="האזינו",
-        aliyah_name="ראשון",
-        book="Deuteronomy",
-        chapter_start=32,
-        verse_start=1,
-        chapter_end=32,
-        verse_end=6
-    )
-}
-```
-
-**Error Handling Strategy**:
-
-1. **Missing Aliyah Range**: Raise `InvalidReferenceError` (config incomplete)
-2. **Batch API Failure**: Retry with exponential backoff (same as per-verse)
-3. **Validation Failure**: Raise `HebrewTextUnavailableError` (missing diacritics)
-4. **Partial Range Success**: Not applicable (batch is atomic - all or nothing)
-
-**Key Design Decision - Why Separate Fetcher?**
-
-- **Single Responsibility**: `SefariaClient` = API wrapper, `ParashaTextFetcher` = Aliyah-aware orchestrator
-- **Testability**: Can mock `SefariaClient` in `ParashaTextFetcher` tests
-- **Flexibility**: Easy to add alternative text sources (local database, different API)
-- **Configuration Management**: Range mappings centralized, not scattered in code
-
-## Next Steps  
-  
-Phase 1 continues with:  
-- CLI contract definition (`contracts/`)  
-- Quickstart guide (`quickstart.md`)  
+1. **Flat DuckDB entities** — No nested Pydantic composition; FK relationships via repository pattern
+2. **Per-pasuk alignment** — Individual verse rows instead of JSON blob enables SQL queries and per-verse correction
+3. **Audio as alignment source** — `alignment_runs` links to `alya_audio` because the audio file is the input to the alignment engine
+4. **Haftara as aliyah** — `order_num=9`, same pipeline, no separate entity
+5. **Compound ranges** — `alya_ranges` supports non-consecutive Haftarot readings
+6. **State machine** — Alya state transitions tracked for pipeline monitoring

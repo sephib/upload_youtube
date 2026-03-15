@@ -7,7 +7,7 @@ from typing import Any
 
 from src.lib.exceptions import InvalidReferenceError
 from src.lib.logging import get_logger
-from src.models.aliyah_range import AliyahRange
+from src.models.alya_range import AlyaRange
 from src.services.text.sefaria_client import SefariaClient
 
 logger = get_logger(__name__)
@@ -39,7 +39,7 @@ class ParashaTextFetcher:
         """
         self.config_path = Path(config_path or "data/aliyah_ranges.toml")
         self.sefaria_client = sefaria_client or SefariaClient()
-        self.ranges: dict[tuple[str, str], AliyahRange] = {}
+        self.ranges: dict[tuple[str, str], AlyaRange] = {}
         
         self._load_ranges()
         
@@ -66,9 +66,9 @@ class ParashaTextFetcher:
         # Parse TOML structure: [parasha_name.aliyah_name]
         for parasha_name, aliyot in config.items():
             for aliyah_name, range_data in aliyot.items():
-                # Validate and create AliyahRange
+                # Validate and create AlyaRange
                 try:
-                    aliyah_range = AliyahRange(**range_data)
+                    aliyah_range = AlyaRange(**range_data)
                     self.ranges[(parasha_name, aliyah_name)] = aliyah_range
                     logger.debug(
                         f"Loaded range",
@@ -87,15 +87,15 @@ class ParashaTextFetcher:
         
         logger.info(f"Loaded {len(self.ranges)} Aliyah ranges from configuration")
     
-    def get_range_for_aliyah(self, parasha_name: str, aliyah_name: str) -> AliyahRange:
-        """Get AliyahRange for a specific Parasha/Aliyah combination.
+    def get_range_for_aliyah(self, parasha_name: str, aliyah_name: str) -> AlyaRange:
+        """Get AlyaRange for a specific Parasha/Aliyah combination.
         
         Args:
             parasha_name: Parasha name in Hebrew (e.g., "האזינו")
             aliyah_name: Aliyah name in Hebrew (e.g., "ראשון")
         
         Returns:
-            AliyahRange instance with verse range configuration
+            AlyaRange instance with verse range configuration
         
         Raises:
             InvalidReferenceError: When Parasha/Aliyah mapping not found

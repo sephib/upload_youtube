@@ -1,25 +1,28 @@
 # Implementation Plan: Manual Alignment Correction
 
-**Branch**: `002-manual-alignment-correction` | **Date**: 2026-03-11 | **Spec**: [spec.md](spec.md)
+<!-- Edited by Claude Opus 4.6 -->
+
+**Branch**: `002-manual-alignment-correction` | **Date**: 2026-03-15 | **Spec**: [spec.md](spec.md)
 **Input**: Feature specification from `/specs/002-manual-alignment-correction/spec.md`
+**Source of truth**: `tmp/db_erd.md` (ERD v2)
 
 ## Summary
 
 Build an interactive **marimo web app** for fine-tuning audio-text alignment in Torah parasha
 videos. The app wraps **wavesurfer.js** (via `anywidget`) to display an audio waveform with
 draggable verse boundary regions, alongside a verse table and range sliders for precise timestamp
-adjustment. Corrections persist as extended `TimestampMap` JSON files that the pipeline
-automatically detects and reuses, skipping re-alignment.
+adjustment. Corrections persist in DuckDB as `AlignmentRun` + `PasukAlignment` rows that the
+pipeline automatically detects and reuses, skipping re-alignment.
 
 ## Technical Context
 
 **Language/Version**: Python 3.13
 **Primary Dependencies**: marimo (>=0.10), anywidget (>=0.9), traitlets (>=5.0), wavesurfer.js (CDN, v7), pydantic (existing)
-**Storage**: File-based (JSON for TimestampMap, CSV for bulk export/import)
+**Storage**: DuckDB (AlignmentRun + PasukAlignment tables), CSV for bulk export/import
 **Testing**: pytest (flat functions, parametrize, contract/integration/unit)
 **Target Platform**: Local macOS/Linux, served via `marimo run` (localhost)
 **Project Type**: Single project (Python library + marimo app)
-**Performance Goals**: Load TimestampMap + audio waveform in <5s; slider edits reflect in <100ms; save <1s
+**Performance Goals**: Load AlignmentRun + audio waveform in <5s; slider edits reflect in <100ms; save <1s
 **Constraints**: Audio files up to 50MB; Hebrew RTL text with Nikkud/T'amim; offline-capable (no external APIs needed for correction)
 **Scale/Scope**: Typical Aliyah has 6-20 verses; single user, local tool
 
@@ -65,15 +68,30 @@ src/
 +-- widgets/
 |   +-- waveform_widget.py     # WaveformWidget (anywidget + wavesurfer.js)
 +-- models/
-|   +-- correction.py          # CorrectionMetadata, ValidationResult, BackupRecord
-|   +-- timestamp.py           # VerseTimestamp (extended with original_* fields)
-|   +-- timestamp_map.py       # TimestampMap (extended with correction_metadata)
+|   +-- playlist.py            # Playlist model
+|   +-- alya.py                # Alya model (replaces Aliyah)
+|   +-- alya_audio.py          # AlyaAudio model (replaces AudioSource)
+|   +-- alya_video.py          # AlyaVideo model (replaces SynchronizedVideo)
+|   +-- alignment_run.py       # AlignmentRun model (replaces TimestampMap)
+|   +-- pasuk_alignment.py     # PasukAlignment model (per-verse alignment)
+|   +-- alya_range.py          # AlyaRange model (verse ranges)
+|   +-- timestamp.py           # VerseTimestamp (transient, used by alignment engine)
+|   +-- validation.py          # ValidationResult, Violation (transient)
++-- repositories/
+|   +-- db.py                  # DuckDB connection manager + schema
+|   +-- playlist_repo.py       # PlaylistRepository
+|   +-- alya_repo.py           # AlyaRepository
+|   +-- alya_range_repo.py     # AlyaRangeRepository
+|   +-- alya_audio_repo.py     # AlyaAudioRepository
+|   +-- alya_video_repo.py     # AlyaVideoRepository
+|   +-- alignment_repo.py      # AlignmentRunRepository
+|   +-- pasuk_alignment_repo.py # PasukAlignmentRepository
 +-- services/
 |   +-- correction/
 |   |   +-- editor.py          # CorrectionEditor (load, edit, validate, save)
 |   |   +-- backup.py          # BackupManager (create, list, restore)
 |   |   +-- csv_handler.py     # CSV export/import with UTF-8 Hebrew
-|   |   +-- validator.py       # TimestampValidator (constraint checking)
+|   |   +-- validator.py       # AlignmentValidator (constraint checking)
 |   +-- alignment/
 |   |   +-- engine.py          # Existing (no changes)
 |   +-- pipeline.py            # Extended: detect corrected timestamps
@@ -92,14 +110,14 @@ tests/
 |   +-- test_correction_editor.py      # CorrectionEditor unit tests
 |   +-- test_correction_validator.py   # Validator unit tests
 |   +-- test_backup_manager.py         # BackupManager unit tests
-|   +-- test_correction_metadata.py    # Model unit tests
+|   +-- test_pasuk_alignment.py        # PasukAlignment model tests
 |   +-- test_waveform_widget.py        # Widget state sync tests
 ```
 
 **Structure Decision**: Single project structure. The marimo app (`src/apps/`) is a thin UI
 layer over the library services (`src/services/correction/`). All correction logic is
 independently testable without marimo. The `anywidget` (`src/widgets/`) bridges Python state
-to wavesurfer.js.
+to wavesurfer.js. Data is persisted in DuckDB via the repository pattern.
 
 ## Architecture: Marimo Alignment Editor App
 
@@ -111,7 +129,7 @@ to wavesurfer.js.
 +------------------------------------------------------------------+
 |  SIDEBAR                |  MAIN PANEL                             |
 |                         |                                         |
-|  [Load TimestampMap]    |  +------------------------------------+ |
+|  [Load AlignmentRun]    |  +------------------------------------+ |
 |  File: ___________      |  |  WAVEFORM PANEL (wavesurfer.js)    | |
 |                         |  |                                    | |
 |  Parasha: Haazinu       |  |  ~~~/\~~~~~/\/\~~~~/\~~~~~/\~~~~   | |
@@ -156,7 +174,7 @@ to wavesurfer.js.
 | Verse table | `mo.ui.table(df, selection="single")` | Click-to-navigate verse list |
 | Time adjustment | `mo.ui.range_slider(step=0.05, debounce=True)` | Fine-tune start/end per verse (50ms precision) |
 | Play buttons | `mo.ui.button()` | Play verse, play context |
-| File loader | `mo.ui.file_browser()` | Select TimestampMap JSON |
+| File loader | `mo.ui.dropdown()` | Select AlignmentRun from DuckDB |
 | Save/Export | `mo.ui.button()` + `mo.download()` | Save corrections, export CSV |
 | Validation | `mo.callout(kind=...)` | Real-time constraint check display |
 | Layout | `mo.sidebar()` + `mo.vstack()` + `mo.hstack()` | Multi-panel composition |
@@ -229,7 +247,8 @@ User clicks [Play Verse]
 User clicks [Save Corrections]
     |
     +---> BackupManager.create_backup(original)
-    +---> CorrectionEditor.save(timestamp_map, metadata)
+    +---> CorrectionEditor.save(alignment_run, pasuk_alignments)
+    +---> Updates DuckDB rows (alignment_runs + pasuk_alignments)
     +---> Success callout displayed
 ```
 
@@ -238,8 +257,8 @@ User clicks [Save Corrections]
 | Cell | Name | Purpose | Depends On |
 |------|------|---------|------------|
 | 1 | `imports` | Import marimo, models, services | - |
-| 2 | `file_loader` | `mo.ui.file_browser()` for TimestampMap JSON | - |
-| 3 | `load_data` | Parse JSON into TimestampMap + DataFrame | `file_loader` |
+| 2 | `file_loader` | `mo.ui.dropdown()` for AlignmentRun selection from DuckDB | - |
+| 3 | `load_data` | Load AlignmentRun + PasukAlignments from DuckDB into DataFrame | `file_loader` |
 | 4 | `state` | `mo.state()` for mutable correction state + undo stack | `load_data` |
 | 5 | `waveform` | `mo.ui.anywidget(WaveformWidget)` | `state` |
 | 6 | `verse_table` | `mo.ui.table(df, selection="single")` | `state` |
@@ -257,14 +276,16 @@ User clicks [Save Corrections]
 
 Focus: Correction logic as testable library, no UI yet.
 
-1. **CorrectionMetadata model** — `src/models/correction.py`
-2. **TimestampMap extension** — add `correction_metadata` field
-3. **VerseTimestamp extension** — add `original_start_time`, `original_end_time`, `manually_corrected`
-4. **TimestampValidator** — constraint checking service (extracted from model validator)
-5. **BackupManager** — create/list/restore backups
-6. **CorrectionEditor** — load, edit single verse, validate, save with backup
-7. **Pipeline integration** — detect `manually_corrected`, skip alignment, `--force-realign` flag
-8. **CLI subcommands** — `correction show`, `correction edit`, `correction restore`
+1. **PasukAlignment model** — `src/models/pasuk_alignment.py` (per-verse alignment with `original_start_time`/`original_end_time`)
+2. **AlyaRange model** — `src/models/alya_range.py` (verse ranges, compound Haftarot)
+3. **AlignmentRun update** — link to `alya_audio_id` instead of `alya_id`, remove `timestamps_json`
+4. **New repositories** — `PasukAlignmentRepository`, `AlyaRangeRepository`
+5. **DB schema migration** — update `ensure_schema()` for `pasuk_alignments` + `alya_ranges` tables
+6. **AlignmentValidator** — constraint checking service (monotonic, no overlaps, gaps)
+7. **BackupManager** — create/list/restore backups
+8. **CorrectionEditor** — load, edit single verse, validate, save with backup (DuckDB-backed)
+9. **Pipeline integration** — detect `manually_corrected`, skip alignment, `--force-realign` flag
+10. **CLI subcommands** — `correction show`, `correction edit`, `correction restore`
 
 ### Phase 2: Interactive App (P1 - US1 visual)
 
@@ -308,4 +329,4 @@ wavesurfer.js v7 loaded via CDN in the anywidget `_esm` module (no Python packag
 | anywidget vs mo.iframe | anywidget | Proper bidirectional state sync; iframe requires postMessage hacks |
 | wavesurfer.js via CDN vs npm bundle | CDN | No frontend build tooling needed; simpler for Python-only project |
 | mo.state() for undo | Lightweight list-based stack | No external state management library needed |
-| Validation in model vs service | Both | Model validates on construction (Pydantic); service validates incrementally for UI feedback |
+| Validation in model vs service | Service | DB stores raw data; AlignmentValidator service validates incrementally for UI feedback |

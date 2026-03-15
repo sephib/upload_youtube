@@ -1,4 +1,4 @@
-# Edited by Claude Code, Claude Opus 4.6
+# Edited by Claude Code, Claude Opus 4.6 (updated for PasukAlignment model)
 """VideoRenderer for creating synchronized videos with Hebrew text overlay."""
 
 import tempfile
@@ -16,6 +16,7 @@ from src.lib.exceptions import VideoRenderError
 from src.lib.logging import get_logger
 from src.models.alignment_run import AlignmentRun
 from src.models.alya_video import AlyaVideo
+from src.models.pasuk_alignment import PasukAlignment
 from src.services.text.hebrew_renderer import render_hebrew_text_image_simple
 
 logger = get_logger(__name__)
@@ -63,6 +64,8 @@ class VideoRenderer:
         alignment_run: AlignmentRun,
         output_path: Path,
         verses: list[tuple[str, str]] | None = None,
+        pasuk_alignments: list[PasukAlignment] | None = None,
+        alya_id: int | None = None,
     ) -> AlyaVideo:
         """Render synchronized video with text overlay.
 
@@ -71,6 +74,8 @@ class VideoRenderer:
             alignment_run: AlignmentRun with verse timestamps
             output_path: Output video file path
             verses: Optional list of (reference, hebrew_text) tuples
+            pasuk_alignments: Per-verse alignment data
+            alya_id: FK to alyot.id (passed from pipeline)
 
         Returns:
             AlyaVideo model
@@ -78,11 +83,11 @@ class VideoRenderer:
         Raises:
             VideoRenderError: If rendering fails
         """
-        verse_timestamps = alignment_run.get_timestamps()
+        verse_count = len(pasuk_alignments) if pasuk_alignments else 0
         logger.info(
             f"Starting video render",
             audio_file=str(audio_file),
-            verse_count=len(verse_timestamps),
+            verse_count=verse_count,
             output_path=str(output_path),
         )
 
@@ -135,7 +140,7 @@ class VideoRenderer:
 
             # Create AlyaVideo model
             return AlyaVideo(
-                alya_id=alignment_run.alya_id,
+                alya_id=alya_id or 0,  # TODO: pass alya_id from pipeline, not from alignment_run
                 file_path=str(output_path),
                 format="mp4",
                 resolution_w=self.resolution[0],
