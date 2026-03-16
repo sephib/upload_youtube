@@ -1,8 +1,8 @@
-# Edited by Claude Opus 4.6 (fixed: each cell self-displays as last expression)
+# Edited by Claude Code
 """Marimo app for manual alignment correction.
 
 Displays psukim (verses) as text with start/end times,
-allowing the user to adjust timestamps per pasuk.
+allowing the user to adjust timestamps by dragging waveform regions.
 Backend: DuckDB via repositories.
 
 Launch: torah-sync correct
@@ -26,6 +26,9 @@ def imports():
 def verse_table(mo):
     mo.md("""
     # Alignment Editor
+
+    Drag region edges on the waveform to adjust verse boundaries,
+    then click **Save All** to persist changes.
     """)
     return
 
@@ -131,27 +134,36 @@ def audio_waveform(audio, mo, pasuk_alignments):
 
     waveform_ui = mo.ui.anywidget(waveform)
     waveform_ui
-    return (waveform,)
+    return waveform, waveform_ui
 
 
 @app.cell(hide_code=True)
-def layout(mo, pasuk_alignments):
-    """Display the verse table with alignment data."""
-    table_data = [
-        {
-            "order": pa.verse_order,
-            "reference": pa.reference,
+def layout(mo, pasuk_alignments, waveform_ui):
+    # Edited by Claude Code
+    """Display verse table reflecting waveform region edits."""
+    _wf_regions = waveform_ui.value.get("regions", []) if waveform_ui.value else []
+    _region_map = {r["id"]: r for r in _wf_regions}
+
+    table_data = []
+    for _pa in pasuk_alignments:
+        _region = _region_map.get(str(_pa.id))
+        _start = _region["start"] if _region else _pa.start_time
+        _end = _region["end"] if _region else _pa.end_time
+        _changed = _region and (
+            abs(_start - _pa.start_time) > 0.001 or abs(_end - _pa.end_time) > 0.001
+        )
+        table_data.append({
+            "order": _pa.verse_order,
+            "reference": _pa.reference,
             "hebrew_text": (
-                pa.hebrew_text[:60] + ("..." if len(pa.hebrew_text) > 60 else "")
+                _pa.hebrew_text[:60] + ("..." if len(_pa.hebrew_text) > 60 else "")
             ),
-            "start_time": round(pa.start_time, 3),
-            "end_time": round(pa.end_time, 3),
-            "duration": round(pa.end_time - pa.start_time, 3),
-            "confidence": round(pa.confidence, 2),
-            "corrected": "yes" if pa.manually_corrected else "",
-        }
-        for pa in pasuk_alignments
-    ]
+            "start_time": round(_start, 3),
+            "end_time": round(_end, 3),
+            "duration": round(_end - _start, 3),
+            "confidence": round(_pa.confidence, 2),
+            "edited": "*" if _changed else "",
+        })
 
     table = mo.ui.table(
         table_data,
@@ -160,75 +172,6 @@ def layout(mo, pasuk_alignments):
     )
     table
     return (table,)
-
-
-@app.cell(hide_code=True)
-def trim_panel(audio, mo, pasuk_alignments):
-    # Edited by Claude Opus 4.6 (trim intro offset feature)
-    """Set a trim-start offset to skip intro audio (e.g. section description)."""
-    first_pa = pasuk_alignments[0]
-    trim_input = mo.ui.number(
-        value=first_pa.start_time,
-        start=0.0,
-        stop=audio.duration_seconds,
-        step=0.1,
-        label="Trim start (s) — skip intro audio before first verse",
-    )
-    trim_btn = mo.ui.run_button(label="Apply Trim")
-    mo.vstack([
-        mo.md("### Trim Intro"),
-        mo.md(
-            f"Current first verse starts at **{first_pa.start_time:.2f}s**. "
-            "Set the trim point to shift all verses forward."
-        ),
-        mo.hstack([trim_input, trim_btn]),
-    ])
-    return trim_btn, trim_input
-
-
-@app.cell(hide_code=True)
-def apply_trim(
-    alignment_run,
-    mo,
-    pa_repo,
-    pasuk_alignments,
-    run_repo,
-    trim_btn,
-    trim_input,
-):
-    # Edited by Claude Opus 4.6
-    """Apply trim offset: shift all verse timestamps so first verse starts at trim point."""
-    mo.stop(not trim_btn.value)
-
-    offset = trim_input.value
-    first_start = pasuk_alignments[0].start_time
-
-    if abs(offset - first_start) < 0.001:
-        mo.stop(True, mo.callout("No change — trim value matches current start.", kind="warn"))
-
-    shift = offset - first_start
-    for _pa in pasuk_alignments:
-        if _pa.original_start_time is None:
-            _pa.original_start_time = _pa.start_time
-            _pa.original_end_time = _pa.end_time
-        _pa.start_time = max(0.0, _pa.start_time + shift)
-        _pa.end_time = max(0.0, _pa.end_time + shift)
-        _pa.manually_corrected = True
-        pa_repo.update(_pa)
-
-    if not alignment_run.manually_corrected:
-        from datetime import datetime as _datetime
-        alignment_run.original_quality = alignment_run.alignment_quality
-        alignment_run.manually_corrected = True
-        alignment_run.corrected_at = _datetime.now()
-        run_repo.mark_corrected(alignment_run)
-
-    mo.callout(
-        f"**Trimmed:** shifted all {len(pasuk_alignments)} verses by {shift:+.3f}s "
-        f"(first verse now starts at {offset:.2f}s)",
-        kind="success",
-    )
-    return
 
 
 @app.cell(hide_code=True)
@@ -247,97 +190,84 @@ def table_to_waveform(mo, pasuk_alignments, table, waveform):
 
 
 @app.cell(hide_code=True)
-def edit_panel(audio, mo, pasuk_alignments, table):
-    """Edit start/end times for the selected verse."""
-    mo.stop(
-        len(table.value) == 0,
-        mo.md("*Click a row above to edit its timestamps.*"),
-    )
-
-    selected_row = table.value[0]
-    selected_order = selected_row["order"]
-
-    pa = next(p for p in pasuk_alignments if p.verse_order == selected_order)
-
-    start_input = mo.ui.number(
-        value=pa.start_time,
-        start=0.0,
-        stop=audio.duration_seconds,
-        step=0.05,
-        label="Start time (s)",
-    )
-    end_input = mo.ui.number(
-        value=pa.end_time,
-        start=0.0,
-        stop=audio.duration_seconds,
-        step=0.05,
-        label="End time (s)",
-    )
+def edit_panel(mo):
+    # Edited by Claude Code
+    """Save All button — always renders, no mo.stop."""
+    save_all_btn = mo.ui.run_button(label="Save All Alignments")
 
     mo.vstack([
-        mo.md(f"### Editing: {pa.reference}"),
-        mo.hstack([start_input, end_input]),
+        mo.md("### Save Changes"),
+        mo.md(
+            "Drag region edges on the waveform above to adjust verse boundaries. "
+            "Edited verses show **\\*** in the table. Click below to save all changes."
+        ),
+        save_all_btn,
     ])
-    return end_input, pa, start_input
+    return (save_all_btn,)
 
 
-@app.cell
-def save_button(mo):
-    """Button to apply edits."""
-    save_btn = mo.ui.run_button(label="Apply Edit")
-    save_btn
-    return (save_btn,)
-
-
-@app.cell
-def apply_edit(
+@app.cell(hide_code=True)
+def _(
     alignment_run,
-    end_input,
     mo,
-    pa,
     pa_repo,
+    pasuk_alignments,
     run_repo,
-    save_btn,
-    start_input,
+    save_all_btn,
+    waveform_ui,
 ):
-    """Apply the timestamp edit to DuckDB when save is clicked."""
-    mo.stop(not save_btn.value)
+    # Edited by Claude Code
+    """Persist all waveform region edits to DuckDB when save_all_btn is clicked."""
+    mo.stop(not save_all_btn.value)
 
-    new_start = start_input.value
-    new_end = end_input.value
+    _wf_regions = waveform_ui.value.get("regions", []) if waveform_ui.value else []
+    _region_map = {r["id"]: r for r in _wf_regions}
 
-    if new_end <= new_start:
-        mo.stop(
-            True,
-            mo.callout(
-                f"**Invalid:** end_time ({new_end}) must be > start_time ({new_start})",
-                kind="danger",
-            ),
-        )
+    _updated_count = 0
+    for _pa in pasuk_alignments:
+        _region = _region_map.get(str(_pa.id))
+        if not _region:
+            continue
 
-    # Save original values on first correction
-    if pa.original_start_time is None:
-        pa.original_start_time = pa.start_time
-        pa.original_end_time = pa.end_time
+        _new_start = _region["start"]
+        _new_end = _region["end"]
 
-    pa.start_time = new_start
-    pa.end_time = new_end
-    pa.manually_corrected = True
-    pa_repo.update(pa)
+        if (
+            abs(_new_start - _pa.start_time) < 0.001
+            and abs(_new_end - _pa.end_time) < 0.001
+        ):
+            continue
 
-    # Mark alignment run as corrected
-    if not alignment_run.manually_corrected:
-        from datetime import datetime
+        if _pa.original_start_time is None:
+            _pa.original_start_time = _pa.start_time
+            _pa.original_end_time = _pa.end_time
+
+        _pa.start_time = _new_start
+        _pa.end_time = _new_end
+        _pa.manually_corrected = True
+        pa_repo.update(_pa)
+        _updated_count += 1
+
+    if _updated_count > 0 and not alignment_run.manually_corrected:
+        from datetime import datetime as _datetime
 
         alignment_run.original_quality = alignment_run.alignment_quality
         alignment_run.manually_corrected = True
-        alignment_run.corrected_at = datetime.now()
+        alignment_run.corrected_at = _datetime.now()
         run_repo.mark_corrected(alignment_run)
 
-    mo.callout(
-        f"**Saved** {pa.reference}: {new_start:.3f}s - {new_end:.3f}s",
-        kind="success",
-    )
+    if _updated_count > 0:
+        _msg = mo.callout(
+            f"**Saved {_updated_count}** of {len(pasuk_alignments)} "
+            "verse alignments to DuckDB.",
+            kind="success",
+        )
+    else:
+        _msg = mo.callout(
+            "No changes detected — all regions match stored values.", kind="warn",
+        )
+
+    _msg
     return
 
 

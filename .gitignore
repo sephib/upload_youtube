@@ -63,3 +63,4 @@ vendor/
 *.tmp
 *.bak
 *.orig
+data/torah_sync.duckdb.wal
