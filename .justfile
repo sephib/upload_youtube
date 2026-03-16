@@ -257,3 +257,9 @@ help:
 # Show version
 version:
     uv run torah-sync --version
+
+demo-wave:
+    uv run marimo edit demos/wavesurfer_demo.py --watch
+
+run-app:
+    uv run marimo edit src/apps/alignment_editor.py --watch

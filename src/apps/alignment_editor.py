@@ -22,7 +22,7 @@ def imports():
     return (mo,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def verse_table(mo):
     mo.md("""
     # Alignment Editor
@@ -30,7 +30,7 @@ def verse_table(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def db_setup(mo):
     """Initialize DuckDB connection and load playlists."""
     from src.repositories.alignment_repo import AlignmentRunRepository
@@ -58,7 +58,7 @@ def db_setup(mo):
     return alya_repo, audio_repo, pa_repo, playlist_dropdown, run_repo
 
 
-@app.cell
+@app.cell(hide_code=True)
 def alya_selector(alya_repo, mo, playlist_dropdown):
     """Select an alya within the chosen playlist."""
     mo.stop(playlist_dropdown.value is None, mo.md("Select a Parasha above."))
@@ -74,7 +74,7 @@ def alya_selector(alya_repo, mo, playlist_dropdown):
     return (alya_dropdown,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def load_alignment(alya_dropdown, audio_repo, mo, pa_repo, run_repo):
     """Load the latest alignment run and its pasuk alignments."""
     mo.stop(alya_dropdown.value is None, mo.md("Select an Alya above."))
@@ -94,7 +94,7 @@ def load_alignment(alya_dropdown, audio_repo, mo, pa_repo, run_repo):
     return alignment_run, audio, pasuk_alignments
 
 
-@app.cell
+@app.cell(hide_code=True)
 def audio_player(audio, mo):
     # Edited by Claude Opus 4.6
     """Audio player for the alya audio."""
@@ -108,26 +108,38 @@ def audio_player(audio, mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def audio_skip_buttons(mo):
     # Edited by Claude Opus 4.6 (skip controls for audio player)
     """Skip buttons to move audio position back/forward."""
-    mo.Html("""
+    _js_skip = """
+      var a=document.querySelector('audio');
+      var d=document.getElementById('audio-time');
+      if(a){a.currentTime+=%s;
+        if(!a._hasTimeListener){a._hasTimeListener=true;
+          a.ontimeupdate=function(){if(d)d.textContent=a.currentTime.toFixed(3)};
+          setInterval(function(){if(d)d.textContent=a.currentTime.toFixed(3)},100)}}
+    """
+    mo.Html(f"""
     <div style="display:flex; align-items:center; gap:6px; padding:4px 0;">
-      <button onclick="document.querySelector('audio').currentTime -= 5" title="-5s"
+      <button onclick="{_js_skip % '-5'}" title="-5s"
         style="font-size:18px; cursor:pointer; padding:4px 10px;">⏪5</button>
-      <button onclick="document.querySelector('audio').currentTime -= 1" title="-1s"
+      <button onclick="{_js_skip % '-1'}" title="-1s"
         style="font-size:18px; cursor:pointer; padding:4px 10px;">◀1</button>
-      <button onclick="document.querySelector('audio').currentTime += 1" title="+1s"
+      <span id="audio-time" style="font-family:monospace; font-size:18px; min-width:100px;
+        text-align:center; background:#f0f0f0; padding:4px 8px; border-radius:4px;"
+        onmouseover="var a=document.querySelector('audio');if(a){{if(!a._hasTimeListener){{a._hasTimeListener=true;a.ontimeupdate=function(){{document.getElementById('audio-time').textContent=a.currentTime.toFixed(3)}};setInterval(function(){{document.getElementById('audio-time').textContent=a.currentTime.toFixed(3)}},100)}}}}"
+        >hover to activate</span>
+      <button onclick="{_js_skip % '1'}" title="+1s"
         style="font-size:18px; cursor:pointer; padding:4px 10px;">1▶</button>
-      <button onclick="document.querySelector('audio').currentTime += 5" title="+5s"
+      <button onclick="{_js_skip % '5'}" title="+5s"
         style="font-size:18px; cursor:pointer; padding:4px 10px;">5⏩</button>
     </div>
     """)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def layout(mo, pasuk_alignments):
     """Display the verse table with alignment data."""
     table_data = [
@@ -155,8 +167,8 @@ def layout(mo, pasuk_alignments):
     return (table,)
 
 
-@app.cell
-def trim_panel(audio, mo, pa_repo, pasuk_alignments):
+@app.cell(hide_code=True)
+def trim_panel(audio, mo, pasuk_alignments):
     # Edited by Claude Opus 4.6 (trim intro offset feature)
     """Set a trim-start offset to skip intro audio (e.g. section description)."""
     first_pa = pasuk_alignments[0]
@@ -179,8 +191,16 @@ def trim_panel(audio, mo, pa_repo, pasuk_alignments):
     return trim_btn, trim_input
 
 
-@app.cell
-def apply_trim(alignment_run, mo, pa_repo, pasuk_alignments, run_repo, trim_btn, trim_input):
+@app.cell(hide_code=True)
+def apply_trim(
+    alignment_run,
+    mo,
+    pa_repo,
+    pasuk_alignments,
+    run_repo,
+    trim_btn,
+    trim_input,
+):
     # Edited by Claude Opus 4.6
     """Apply trim offset: shift all verse timestamps so first verse starts at trim point."""
     mo.stop(not trim_btn.value)
@@ -216,7 +236,7 @@ def apply_trim(alignment_run, mo, pa_repo, pasuk_alignments, run_repo, trim_btn,
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def edit_panel(audio, mo, pasuk_alignments, table):
     """Edit start/end times for the selected verse."""
     mo.stop(

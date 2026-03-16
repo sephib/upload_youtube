@@ -61,6 +61,8 @@ ml = [
 ]
 app = [
     "marimo>=0.10",
+    "anywidget>=0.9",
+    "traitlets>=5.0",
 ]
 
 [project.scripts]
