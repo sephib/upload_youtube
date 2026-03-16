@@ -95,48 +95,43 @@ def load_alignment(alya_dropdown, audio_repo, mo, pa_repo, run_repo):
 
 
 @app.cell(hide_code=True)
-def audio_player(audio, mo):
-    # Edited by Claude Opus 4.6
-    """Audio player for the alya audio."""
+def audio_waveform(audio, mo, pasuk_alignments):
+    # Edited by Claude Code
+    """Waveform player with verse regions using WavesurferWidget."""
     from pathlib import Path
 
+    from src.widgets.wavesurfer_widget import WavesurferWidget
+
     audio_path = Path(audio.file_path).resolve()
-    if not audio_path.exists():
-        mo.stop(True, mo.md(f"*Audio file not found: {audio.file_path}*"))
+    mo.stop(not audio_path.exists(), mo.md(f"*Audio file not found: {audio.file_path}*"))
 
-    mo.audio(src=str(audio_path))
-    return
+    with open(audio_path, "rb") as f:
+        audio_bytes = f.read()
 
+    regions = [
+        {
+            "id": str(pa.id),
+            "start": pa.start_time,
+            "end": pa.end_time,
+            "label": pa.reference,
+            "confidence": pa.confidence,
+            "corrected": pa.manually_corrected,
+            "drag": True,
+            "resize": True,
+        }
+        for pa in pasuk_alignments
+    ]
 
-@app.cell(hide_code=True)
-def audio_skip_buttons(mo):
-    # Edited by Claude Opus 4.6 (skip controls for audio player)
-    """Skip buttons to move audio position back/forward."""
-    _js_skip = """
-      var a=document.querySelector('audio');
-      var d=document.getElementById('audio-time');
-      if(a){a.currentTime+=%s;
-        if(!a._hasTimeListener){a._hasTimeListener=true;
-          a.ontimeupdate=function(){if(d)d.textContent=a.currentTime.toFixed(3)};
-          setInterval(function(){if(d)d.textContent=a.currentTime.toFixed(3)},100)}}
-    """
-    mo.Html(f"""
-    <div style="display:flex; align-items:center; gap:6px; padding:4px 0;">
-      <button onclick="{_js_skip % '-5'}" title="-5s"
-        style="font-size:18px; cursor:pointer; padding:4px 10px;">⏪5</button>
-      <button onclick="{_js_skip % '-1'}" title="-1s"
-        style="font-size:18px; cursor:pointer; padding:4px 10px;">◀1</button>
-      <span id="audio-time" style="font-family:monospace; font-size:18px; min-width:100px;
-        text-align:center; background:#f0f0f0; padding:4px 8px; border-radius:4px;"
-        onmouseover="var a=document.querySelector('audio');if(a){{if(!a._hasTimeListener){{a._hasTimeListener=true;a.ontimeupdate=function(){{document.getElementById('audio-time').textContent=a.currentTime.toFixed(3)}};setInterval(function(){{document.getElementById('audio-time').textContent=a.currentTime.toFixed(3)}},100)}}}}"
-        >hover to activate</span>
-      <button onclick="{_js_skip % '1'}" title="+1s"
-        style="font-size:18px; cursor:pointer; padding:4px 10px;">1▶</button>
-      <button onclick="{_js_skip % '5'}" title="+5s"
-        style="font-size:18px; cursor:pointer; padding:4px 10px;">5⏩</button>
-    </div>
-    """)
-    return
+    waveform = WavesurferWidget(
+        audio_data=audio_bytes,
+        regions=regions,
+        height=150,
+        zoom_level=50,
+    )
+
+    waveform_ui = mo.ui.anywidget(waveform)
+    waveform_ui
+    return (waveform,)
 
 
 @app.cell(hide_code=True)
@@ -233,6 +228,21 @@ def apply_trim(
         f"(first verse now starts at {offset:.2f}s)",
         kind="success",
     )
+    return
+
+
+@app.cell(hide_code=True)
+def table_to_waveform(mo, pasuk_alignments, table, waveform):
+    # Edited by Claude Code
+    """Sync table selection to waveform: seek and play the selected verse segment."""
+    mo.stop(len(table.value) == 0)
+
+    _selected_row = table.value[0]
+    _selected_order = _selected_row["order"]
+    _pa = next(p for p in pasuk_alignments if p.verse_order == _selected_order)
+
+    waveform.selected_region_id = str(_pa.id)
+    waveform.play_range = [_pa.start_time, _pa.end_time]
     return
 
 

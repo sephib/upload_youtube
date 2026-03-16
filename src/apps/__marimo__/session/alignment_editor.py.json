@@ -6,19 +6,6 @@
   },
   "cells": [
     {
-      "id": "MJUe",
-      "code_hash": "13b9e14856f3dd669dccaf6c8f946183",
-      "outputs": [
-        {
-          "type": "data",
-          "data": {
-            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"alignment-editor\">Alignment Editor</h1></span>"
-          }
-        }
-      ],
-      "console": []
-    },
-    {
       "id": "Hbol",
       "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
       "outputs": [
@@ -32,13 +19,26 @@
       "console": []
     },
     {
+      "id": "MJUe",
+      "code_hash": "13b9e14856f3dd669dccaf6c8f946183",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"alignment-editor\">Alignment Editor</h1></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
       "id": "vblA",
       "code_hash": "c2ef6223f2a3dd5fe146114e4711757e",
       "outputs": [
         {
           "type": "data",
           "data": {
-            "text/html": "<marimo-ui-element object-id='vblA-0' random-id='7659695e-5c1c-8dc2-2e9e-a2e18510832a'><marimo-dropdown data-initial-value='[]' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Select Parasha&lt;/span&gt;&lt;/span&gt;&quot;' data-options='[&quot;\u05d4\u05d0\u05d6\u05d9\u05e0\u05d5&quot;]' data-allow-select-none='true' data-searchable='false' data-full-width='false'></marimo-dropdown></marimo-ui-element>"
+            "text/html": "<marimo-ui-element object-id='vblA-0' random-id='68b58cd8-7037-6133-ab00-8d568571a2fc'><marimo-dropdown data-initial-value='[]' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Select Parasha&lt;/span&gt;&lt;/span&gt;&quot;' data-options='[&quot;\u05d4\u05d0\u05d6\u05d9\u05e0\u05d5&quot;]' data-allow-select-none='true' data-searchable='false' data-full-width='false'></marimo-dropdown></marimo-ui-element>"
           }
         }
       ],
@@ -51,7 +51,7 @@
         {
           "type": "data",
           "data": {
-            "text/html": "<marimo-ui-element object-id='bkHC-0' random-id='5085f0a1-da72-0521-0708-a30bb78b9b55'><marimo-dropdown data-initial-value='[]' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Select Alya&lt;/span&gt;&lt;/span&gt;&quot;' data-options='[&quot;\u05e8\u05d0\u05e9\u05d5\u05df (id=1, aligned)&quot;,&quot;\u05e9\u05e0\u05d9 (id=2, aligned)&quot;]' data-allow-select-none='true' data-searchable='false' data-full-width='false'></marimo-dropdown></marimo-ui-element>"
+            "text/html": "<marimo-ui-element object-id='bkHC-0' random-id='a46bb351-a096-e101-51e4-cdd31cfe3dec'><marimo-dropdown data-initial-value='[]' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Select Alya&lt;/span&gt;&lt;/span&gt;&quot;' data-options='[&quot;\u05e8\u05d0\u05e9\u05d5\u05df (id=1, aligned)&quot;,&quot;\u05e9\u05e0\u05d9 (id=2, aligned)&quot;]' data-allow-select-none='true' data-searchable='false' data-full-width='false'></marimo-dropdown></marimo-ui-element>"
           }
         }
       ],
@@ -72,12 +72,12 @@
     },
     {
       "id": "PKri",
-      "code_hash": "9551bbe07f8ddb2490f39dc98885d34f",
+      "code_hash": "a180b693b0a4f77dbcba7b517fdebb98",
       "outputs": [
         {
           "type": "data",
           "data": {
-            "text/html": "<audio src='./@file/1797233-14535630-PFThP1HX.mp4' controls></audio>"
+            "text/html": "<marimo-ui-element object-id='PKri-0' random-id='335f2dec-e1e2-1b7e-b980-d16a6c284976'><marimo-anywidget data-initial-value='{&quot;model_id&quot;:&quot;045074351e9940fe9b7371707ae4680f&quot;}' data-label='null' data-js-url='&quot;./@file/8900-14610111-dCvNI4LF.js&quot;' data-js-hash='&quot;20f5d351a5c86034bc981f7da0e63086&quot;'></marimo-anywidget></marimo-ui-element>"
           }
         }
       ],
@@ -85,12 +85,12 @@
     },
     {
       "id": "Xref",
-      "code_hash": "76507c27625eab85821d1ae10c3c6fca",
+      "code_hash": "24e9b82278d1228c9aaeb9e55f5aeba7",
       "outputs": [
         {
           "type": "data",
           "data": {
-            "text/html": "\n<div style=\"display:flex; align-items:center; gap:6px; padding:4px 0;\">\n  <button onclick=\"\n  var a=document.querySelector('audio');\n  var d=document.getElementById('audio-time');\n  if(a){a.currentTime+=-5;\n    if(!a._hasTimeListener){a._hasTimeListener=true;\n      a.ontimeupdate=function(){if(d)d.textContent=a.currentTime.toFixed(3)};\n      setInterval(function(){if(d)d.textContent=a.currentTime.toFixed(3)},100)}}\n\" title=\"-5s\"\n    style=\"font-size:18px; cursor:pointer; padding:4px 10px;\">\u23ea5</button>\n  <button onclick=\"\n  var a=document.querySelector('audio');\n  var d=document.getElementById('audio-time');\n  if(a){a.currentTime+=-1;\n    if(!a._hasTimeListener){a._hasTimeListener=true;\n      a.ontimeupdate=function(){if(d)d.textContent=a.currentTime.toFixed(3)};\n      setInterval(function(){if(d)d.textContent=a.currentTime.toFixed(3)},100)}}\n\" title=\"-1s\"\n    style=\"font-size:18px; cursor:pointer; padding:4px 10px;\">\u25c01</button>\n  <span id=\"audio-time\" style=\"font-family:monospace; font-size:18px; min-width:100px;\n    text-align:center; background:#f0f0f0; padding:4px 8px; border-radius:4px;\"\n    onmouseover=\"var a=document.querySelector('audio');if(a){if(!a._hasTimeListener){a._hasTimeListener=true;a.ontimeupdate=function(){document.getElementById('audio-time').textContent=a.currentTime.toFixed(3)};setInterval(function(){document.getElementById('audio-time').textContent=a.currentTime.toFixed(3)},100)}}\"\n    >hover to activate</span>\n  <button onclick=\"\n  var a=document.querySelector('audio');\n  var d=document.getElementById('audio-time');\n  if(a){a.currentTime+=1;\n    if(!a._hasTimeListener){a._hasTimeListener=true;\n      a.ontimeupdate=function(){if(d)d.textContent=a.currentTime.toFixed(3)};\n      setInterval(function(){if(d)d.textContent=a.currentTime.toFixed(3)},100)}}\n\" title=\"+1s\"\n    style=\"font-size:18px; cursor:pointer; padding:4px 10px;\">1\u25b6</button>\n  <button onclick=\"\n  var a=document.querySelector('audio');\n  var d=document.getElementById('audio-time');\n  if(a){a.currentTime+=5;\n    if(!a._hasTimeListener){a._hasTimeListener=true;\n      a.ontimeupdate=function(){if(d)d.textContent=a.currentTime.toFixed(3)};\n      setInterval(function(){if(d)d.textContent=a.currentTime.toFixed(3)},100)}}\n\" title=\"+5s\"\n    style=\"font-size:18px; cursor:pointer; padding:4px 10px;\">5\u23e9</button>\n</div>\n"
+            "text/html": "<marimo-ui-element object-id='Xref-0' random-id='c22ff743-a65e-1fcc-0674-0a923b8ad21a'><marimo-table data-initial-value='[]' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Verse Alignments&lt;/span&gt;&lt;/span&gt;&quot;' data-data='&quot;[{&#92;&quot;order&#92;&quot;:1,&#92;&quot;reference&#92;&quot;:&#92;&quot;\u05d4\u05d0\u05d6\u05d9\u05e0\u05d5 - \u05e9\u05e0\u05d9 (Intro)&#92;&quot;,&#92;&quot;hebrew_text&#92;&quot;:&#92;&quot;\u05e4\u05e8\u05e9\u05ea \u05d4\u05d0\u05d6\u05d9\u05e0\u05d5 - \u05e9\u05e0\u05d9&#92;&quot;,&#92;&quot;start_time&#92;&quot;:0.0,&#92;&quot;end_time&#92;&quot;:0.1,&#92;&quot;duration&#92;&quot;:0.1,&#92;&quot;confidence&#92;&quot;:1.0,&#92;&quot;corrected&#92;&quot;:&#92;&quot;&#92;&quot;},{&#92;&quot;order&#92;&quot;:2,&#92;&quot;reference&#92;&quot;:&#92;&quot;Deuteronomy 32:7&#92;&quot;,&#92;&quot;hebrew_text&#92;&quot;:&#92;&quot;\u05d6\u05b0\u05db\u05b9\u05e8\u0599 \u05d9\u05b0\u05de\u05a3\u05d5\u05b9\u05ea \u05e2\u05d5\u05b9\u05dc\u05b8\u0594\u05dd \u05d1\u05bc\u05b4\u0596\u05d9\u05e0\u05d5\u05bc \u05e9\u05c1\u05b0\u05e0\u05a3\u05d5\u05b9\u05ea \u05d3\u05bc\u05b9\u05e8\u05be\u05d5\u05b8\u05d3\u05b9\u0591\u05e8        ...&#92;&quot;,&#92;&quot;start_time&#92;&quot;:0.1,&#92;&quot;end_time&#92;&quot;:3.88,&#92;&quot;duration&#92;&quot;:3.78,&#92;&quot;confidence&#92;&quot;:1.0,&#92;&quot;corrected&#92;&quot;:&#92;&quot;&#92;&quot;},{&#92;&quot;order&#92;&quot;:3,&#92;&quot;reference&#92;&quot;:&#92;&quot;Deuteronomy 32:8&#92;&quot;,&#92;&quot;hebrew_text&#92;&quot;:&#92;&quot;\u05d1\u05bc\u05b0\u05d4\u05b7\u05e0\u05b0\u05d7\u05b5\u05a4\u05dc \u05e2\u05b6\u05dc\u05b0\u05d9\u05d5\u05b9\u05df\u0599 \u05d2\u05bc\u05d5\u05b9\u05d9\u05b4\u0594\u05dd        \u05d1\u05bc\u05b0\u05d4\u05b7\u05e4\u05b0\u05e8\u05b4\u05d9\u05d3\u0596\u05d5\u05b9 \u05d1\u05bc\u05b0\u05e0\u05b5\u05a3\u05d9...&#92;&quot;,&#92;&quot;start_time&#92;&quot;:3.88,&#92;&quot;end_time&#92;&quot;:15.96,&#92;&quot;duration&#92;&quot;:12.08,&#92;&quot;confidence&#92;&quot;:1.0,&#92;&quot;corrected&#92;&quot;:&#92;&quot;&#92;&quot;},{&#92;&quot;order&#92;&quot;:4,&#92;&quot;reference&#92;&quot;:&#92;&quot;Deuteronomy 32:9&#92;&quot;,&#92;&quot;hebrew_text&#92;&quot;:&#92;&quot;\u05db\u05bc\u05b4\u059b\u05d9 \u05d7\u05b5\u05a5\u05dc\u05b6\u05e7 \u05d9\u05b0\u05d4\u05b9\u05d5\u05b8\u0596\u05d4 \u05e2\u05b7\u05de\u05bc\u0591\u05d5\u05b9        \u05d9\u05b7\u05e2\u05b2\u05e7\u05b9\u0596\u05d1 \u05d7\u05b6\u05a5\u05d1\u05b6\u05dc \u05e0\u05b7\u05d7\u05b2\u05dc\u05b8\u05ea...&#92;&quot;,&#92;&quot;start_time&#92;&quot;:15.96,&#92;&quot;end_time&#92;&quot;:25.2,&#92;&quot;duration&#92;&quot;:9.24,&#92;&quot;confidence&#92;&quot;:1.0,&#92;&quot;corrected&#92;&quot;:&#92;&quot;&#92;&quot;},{&#92;&quot;order&#92;&quot;:5,&#92;&quot;reference&#92;&quot;:&#92;&quot;Deuteronomy 32:10&#92;&quot;,&#92;&quot;hebrew_text&#92;&quot;:&#92;&quot;\u05d9\u05b4\u05de\u05b0\u05e6\u05b8\u05d0\u05b5\u0599\u05d4\u05d5\u05bc\u0599 \u05d1\u05bc\u05b0\u05d0\u05b6\u05a3\u05e8\u05b6\u05e5 \u05de\u05b4\u05d3\u05b0\u05d1\u05bc\u05b8\u0594\u05e8        \u05d5\u05bc\u05d1\u05b0\u05ea\u05b9\u0596\u05d4\u05d5\u05bc \u05d9\u05b0\u05dc\u05b5\u05a3\u05dc \u05d9...&#92;&quot;,&#92;&quot;start_time&#92;&quot;:25.2,&#92;&quot;end_time&#92;&quot;:30.28,&#92;&quot;duration&#92;&quot;:5.08,&#92;&quot;confidence&#92;&quot;:1.0,&#92;&quot;corrected&#92;&quot;:&#92;&quot;&#92;&quot;},{&#92;&quot;order&#92;&quot;:6,&#92;&quot;reference&#92;&quot;:&#92;&quot;Deuteronomy 32:11&#92;&quot;,&#92;&quot;hebrew_text&#92;&quot;:&#92;&quot;\u05db\u05bc\u05b0\u05e0\u05b6\u0599\u05e9\u05c1\u05b6\u05e8\u0599 \u05d9\u05b8\u05e2\u05b4\u05a3\u05d9\u05e8 \u05e7\u05b4\u05e0\u05bc\u0594\u05d5\u05b9 \u05e2\u05b7\u05dc\u05be\u05d2\u05bc\u05d5\u05b9\u05d6\u05b8\u05dc\u05b8\u0596\u05d9\u05d5 \u05d9\u05b0\u05e8\u05b7\u05d7\u05b5\u0591\u05e3        ...&#92;&quot;,&#92;&quot;start_time&#92;&quot;:30.28,&#92;&quot;end_time&#92;&quot;:46.52,&#92;&quot;duration&#92;&quot;:16.24,&#92;&quot;confidence&#92;&quot;:1.0,&#92;&quot;corrected&#92;&quot;:&#92;&quot;&#92;&quot;},{&#92;&quot;order&#92;&quot;:7,&#92;&quot;reference&#92;&quot;:&#92;&quot;Deuteronomy 32:12&#92;&quot;,&#92;&quot;hebrew_text&#92;&quot;:&#92;&quot;\u05d9\u05b0\u05d4\u05b9\u05d5\u05b8\u0596\u05d4 \u05d1\u05bc\u05b8\u05d3\u05b8\u05a3\u05d3 \u05d9\u05b7\u05e0\u05b0\u05d7\u05b6\u0591\u05e0\u05bc\u05d5\u05bc        \u05d5\u05b0\u05d0\u05b5\u05a5\u05d9\u05df \u05e2\u05b4\u05de\u05bc\u0596\u05d5\u05b9 \u05d0\u05b5\u05a5\u05dc \u05e0\u05b5\u05db...&#92;&quot;,&#92;&quot;start_time&#92;&quot;:46.52,&#92;&quot;end_time&#92;&quot;:57.08,&#92;&quot;duration&#92;&quot;:10.56,&#92;&quot;confidence&#92;&quot;:1.0,&#92;&quot;corrected&#92;&quot;:&#92;&quot;&#92;&quot;}]&quot;' data-total-rows='7' data-total-columns='8' data-max-columns='50' data-banner-text='&quot;&quot;' data-pagination='false' data-page-size='10' data-selection='&quot;single&quot;' data-show-filters='false' data-show-download='false' data-show-column-summaries='false' data-show-data-types='true' data-show-page-size-selector='true' data-show-column-explorer='true' data-show-chart-builder='true' data-row-headers='[]' data-has-stable-row-id='false' data-lazy='false' data-preload='false' data-download-file-name='&quot;table_data&quot;'></marimo-table></marimo-ui-element>"
           }
         }
       ],
@@ -98,12 +98,12 @@
     },
     {
       "id": "SFPL",
-      "code_hash": "24e9b82278d1228c9aaeb9e55f5aeba7",
+      "code_hash": "37bb534f64dad64bd31dc3cd03b6995b",
       "outputs": [
         {
           "type": "data",
           "data": {
-            "text/html": "<marimo-ui-element object-id='SFPL-0' random-id='89fefc2c-3a2e-f534-2f89-0d75d4347cd0'><marimo-table data-initial-value='[]' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Verse Alignments&lt;/span&gt;&lt;/span&gt;&quot;' data-data='&quot;[{&#92;&quot;order&#92;&quot;:1,&#92;&quot;reference&#92;&quot;:&#92;&quot;\u05d4\u05d0\u05d6\u05d9\u05e0\u05d5 - \u05e8\u05d0\u05e9\u05d5\u05df (Intro)&#92;&quot;,&#92;&quot;hebrew_text&#92;&quot;:&#92;&quot;\u05e4\u05e8\u05e9\u05ea \u05d4\u05d0\u05d6\u05d9\u05e0\u05d5 - \u05e8\u05d0\u05e9\u05d5\u05df&#92;&quot;,&#92;&quot;start_time&#92;&quot;:4.0,&#92;&quot;end_time&#92;&quot;:4.1,&#92;&quot;duration&#92;&quot;:0.1,&#92;&quot;confidence&#92;&quot;:1.0,&#92;&quot;corrected&#92;&quot;:&#92;&quot;yes&#92;&quot;},{&#92;&quot;order&#92;&quot;:2,&#92;&quot;reference&#92;&quot;:&#92;&quot;Deuteronomy 32:1&#92;&quot;,&#92;&quot;hebrew_text&#92;&quot;:&#92;&quot;\u05d4\u05b7\u05d0\u05b2\u05d6\u05b4\u05a5\u05d9\u05e0\u05d5\u05bc \u05d4\u05b7\u05e9\u05c1\u05bc\u05b8\u05de\u05b7\u0596\u05d9\u05b4\u05dd \u05d5\u05b7\u05d0\u05b2\u05d3\u05b7\u05d1\u05bc\u05b5\u0591\u05e8\u05b8\u05d4        \u05d5\u05b0\u05ea\u05b4\u05e9\u05c1\u05b0\u05de\u05b7\u05a5\u05e2 \u05d4\u05b8...&#92;&quot;,&#92;&quot;start_time&#92;&quot;:9.0,&#92;&quot;end_time&#92;&quot;:16.0,&#92;&quot;duration&#92;&quot;:7.0,&#92;&quot;confidence&#92;&quot;:1.0,&#92;&quot;corrected&#92;&quot;:&#92;&quot;yes&#92;&quot;},{&#92;&quot;order&#92;&quot;:3,&#92;&quot;reference&#92;&quot;:&#92;&quot;Deuteronomy 32:2&#92;&quot;,&#92;&quot;hebrew_text&#92;&quot;:&#92;&quot;\u05d9\u05b7\u05e2\u05b2\u05e8\u05b9\u05a4\u05e3 \u05db\u05bc\u05b7\u05de\u05bc\u05b8\u05d8\u05b8\u05e8\u0599 \u05dc\u05b4\u05e7\u05b0\u05d7\u05b4\u0594\u05d9        \u05ea\u05bc\u05b4\u05d6\u05bc\u05b7\u05a5\u05dc \u05db\u05bc\u05b7\u05d8\u05bc\u05b7\u0596\u05dc \u05d0\u05b4\u05de\u05b0\u05e8\u05b8...&#92;&quot;,&#92;&quot;start_time&#92;&quot;:8.56,&#92;&quot;end_time&#92;&quot;:16.32,&#92;&quot;duration&#92;&quot;:7.76,&#92;&quot;confidence&#92;&quot;:1.0,&#92;&quot;corrected&#92;&quot;:&#92;&quot;yes&#92;&quot;},{&#92;&quot;order&#92;&quot;:4,&#92;&quot;reference&#92;&quot;:&#92;&quot;Deuteronomy 32:3&#92;&quot;,&#92;&quot;hebrew_text&#92;&quot;:&#92;&quot;\u05db\u05bc\u05b4\u059b\u05d9 \u05e9\u05c1\u05b5\u05a5\u05dd \u05d9\u05b0\u05d4\u05b9\u05d5\u05b8\u0596\u05d4 \u05d0\u05b6\u05e7\u05b0\u05e8\u05b8\u0591\u05d0        \u05d4\u05b8\u05d1\u05a5\u05d5\u05bc \u05d2\u05b9\u0596\u05d3\u05b6\u05dc \u05dc\u05b5\u05d0\u05dc\u05b9\u05d4\u05b5\u05bd\u05d9...&#92;&quot;,&#92;&quot;start_time&#92;&quot;:16.32,&#92;&quot;end_time&#92;&quot;:23.44,&#92;&quot;duration&#92;&quot;:7.12,&#92;&quot;confidence&#92;&quot;:1.0,&#92;&quot;corrected&#92;&quot;:&#92;&quot;yes&#92;&quot;},{&#92;&quot;order&#92;&quot;:5,&#92;&quot;reference&#92;&quot;:&#92;&quot;Deuteronomy 32:4&#92;&quot;,&#92;&quot;hebrew_text&#92;&quot;:&#92;&quot;\u05d4\u05b7\u05e6\u05bc\u05d5\u05bc\u05e8\u0599 \u05ea\u05bc\u05b8\u05de\u05b4\u05a3\u05d9\u05dd \u05e4\u05bc\u05c7\u05bd\u05e2\u05b3\u05dc\u0594\u05d5\u05b9        \u05db\u05bc\u05b4\u05a5\u05d9 \u05db\u05c7\u05dc\u05be\u05d3\u05bc\u05b0\u05e8\u05b8\u05db\u05b8\u0596\u05d9\u05d5 \u05de\u05b4\u05e9...&#92;&quot;,&#92;&quot;start_time&#92;&quot;:23.44,&#92;&quot;end_time&#92;&quot;:27.52,&#92;&quot;duration&#92;&quot;:4.08,&#92;&quot;confidence&#92;&quot;:1.0,&#92;&quot;corrected&#92;&quot;:&#92;&quot;yes&#92;&quot;},{&#92;&quot;order&#92;&quot;:6,&#92;&quot;reference&#92;&quot;:&#92;&quot;Deuteronomy 32:5&#92;&quot;,&#92;&quot;hebrew_text&#92;&quot;:&#92;&quot;\u05e9\u05c1\u05b4\u05d7\u05b5\u05a5\u05ea \u05dc\u059b\u05d5\u05b9 \u05dc\u05b9\u0596\u05d0 \u05d1\u05bc\u05b8\u05e0\u05b8\u05a3\u05d9\u05d5 \u05de\u05d5\u05bc\u05de\u05b8\u0591\u05dd        \u05d3\u05bc\u05a5\u05d5\u05b9\u05e8 \u05e2\u05b4\u05e7\u05bc\u05b5\u0596\u05e9\u05c1 \u05d5\u05bc...&#92;&quot;,&#92;&quot;start_time&#92;&quot;:27.52,&#92;&quot;end_time&#92;&quot;:39.48,&#92;&quot;duration&#92;&quot;:11.96,&#92;&quot;confidence&#92;&quot;:1.0,&#92;&quot;corrected&#92;&quot;:&#92;&quot;yes&#92;&quot;},{&#92;&quot;order&#92;&quot;:7,&#92;&quot;reference&#92;&quot;:&#92;&quot;Deuteronomy 32:6&#92;&quot;,&#92;&quot;hebrew_text&#92;&quot;:&#92;&quot;\u05d4\u05b7 \u05dc\u05b0\u05d9\u05b0\u05d4\u05b9\u05d5\u05b8\u05d4\u0599*(\u05d1\u05e1\u05e4\u05e8\u05d9 \u05ea\u05d9\u05de\u05df \u05d4\u05b7\u05bd\u05dc\u05b0\u05d9\u05d4\u05b9\u05d5\u05b8\u05d4\u0599 \u05d1\u05ea\u05d9\u05d1\u05d4 \u05d0\u05d7\u05ea) \u05ea\u05bc\u05b4\u05d2\u05b0\u05de\u05b0\u05dc\u05d5\u05bc...&#92;&quot;,&#92;&quot;start_time&#92;&quot;:39.48,&#92;&quot;end_time&#92;&quot;:50.48,&#92;&quot;duration&#92;&quot;:11.0,&#92;&quot;confidence&#92;&quot;:1.0,&#92;&quot;corrected&#92;&quot;:&#92;&quot;yes&#92;&quot;}]&quot;' data-total-rows='7' data-total-columns='8' data-max-columns='50' data-banner-text='&quot;&quot;' data-pagination='false' data-page-size='10' data-selection='&quot;single&quot;' data-show-filters='false' data-show-download='false' data-show-column-summaries='false' data-show-data-types='true' data-show-page-size-selector='true' data-show-column-explorer='true' data-show-chart-builder='true' data-row-headers='[]' data-has-stable-row-id='false' data-lazy='false' data-preload='false' data-download-file-name='&quot;table_data&quot;'></marimo-table></marimo-ui-element>"
+            "text/html": "<div style='display: flex;flex: 1;flex-direction: column;justify-content: flex-start;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"trim-intro\">Trim Intro</h3></span><span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Current first verse starts at <strong>0.00s</strong>. Set the trim point to shift all verses forward.</span></span><div style='display: flex;flex: 1;flex-direction: row;justify-content: space-between;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><marimo-ui-element object-id='SFPL-0' random-id='63f3b1b5-c9c9-810d-3927-58821f7aabd6'><marimo-number data-initial-value='0.0' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Trim start (s) \u2014 skip intro audio before first verse&lt;/span&gt;&lt;/span&gt;&quot;' data-start='0.0' data-stop='65.805' data-step='0.1' data-debounce='false' data-full-width='false' data-disabled='false'></marimo-number></marimo-ui-element><marimo-ui-element object-id='SFPL-1' random-id='b92d29d7-b60d-b836-205e-31a06f607923'><marimo-button data-initial-value='0' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Apply Trim&lt;/span&gt;&lt;/span&gt;&quot;' data-kind='&quot;neutral&quot;' data-disabled='false' data-full-width='false'></marimo-button></marimo-ui-element></div></div>"
           }
         }
       ],
@@ -111,19 +111,6 @@
     },
     {
       "id": "BYtC",
-      "code_hash": "37bb534f64dad64bd31dc3cd03b6995b",
-      "outputs": [
-        {
-          "type": "data",
-          "data": {
-            "text/html": "<div style='display: flex;flex: 1;flex-direction: column;justify-content: flex-start;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"trim-intro\">Trim Intro</h3></span><span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Current first verse starts at <strong>4.00s</strong>. Set the trim point to shift all verses forward.</span></span><div style='display: flex;flex: 1;flex-direction: row;justify-content: space-between;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><marimo-ui-element object-id='BYtC-0' random-id='e7cf494a-a7e0-15f4-b463-112459a689c3'><marimo-number data-initial-value='4.0' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Trim start (s) \u2014 skip intro audio before first verse&lt;/span&gt;&lt;/span&gt;&quot;' data-start='0.0' data-stop='30.0' data-step='0.1' data-debounce='false' data-full-width='false' data-disabled='false'></marimo-number></marimo-ui-element><marimo-ui-element object-id='BYtC-1' random-id='1f090337-3a4e-2ffe-fbeb-50ca7a21e3cd'><marimo-button data-initial-value='0' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Apply Trim&lt;/span&gt;&lt;/span&gt;&quot;' data-kind='&quot;neutral&quot;' data-disabled='false' data-full-width='false'></marimo-button></marimo-ui-element></div></div>"
-          }
-        }
-      ],
-      "console": []
-    },
-    {
-      "id": "RGSE",
       "code_hash": "7693e4ee5c7f0a79dee3eddac5e26b66",
       "outputs": [
         {
@@ -136,14 +123,51 @@
       "console": []
     },
     {
+      "id": "RGSE",
+      "code_hash": "e961b616651927931f0efa87ed1094ac",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "multiple-defs",
+          "evalue": "The variable 'pa' was defined by another cell",
+          "traceback": []
+        },
+        {
+          "type": "error",
+          "ename": "multiple-defs",
+          "evalue": "The variable 'selected_order' was defined by another cell",
+          "traceback": []
+        },
+        {
+          "type": "error",
+          "ename": "multiple-defs",
+          "evalue": "The variable 'selected_row' was defined by another cell",
+          "traceback": []
+        }
+      ],
+      "console": []
+    },
+    {
       "id": "Kclp",
       "code_hash": "80a360e3151f4317750efc22439e2127",
       "outputs": [
         {
-          "type": "data",
-          "data": {
-            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><em>Click a row above to edit its timestamps.</em></span></span>"
-          }
+          "type": "error",
+          "ename": "multiple-defs",
+          "evalue": "The variable 'pa' was defined by another cell",
+          "traceback": []
+        },
+        {
+          "type": "error",
+          "ename": "multiple-defs",
+          "evalue": "The variable 'selected_order' was defined by another cell",
+          "traceback": []
+        },
+        {
+          "type": "error",
+          "ename": "multiple-defs",
+          "evalue": "The variable 'selected_row' was defined by another cell",
+          "traceback": []
         }
       ],
       "console": []
@@ -155,7 +179,7 @@
         {
           "type": "data",
           "data": {
-            "text/html": "<marimo-ui-element object-id='emfo-0' random-id='8cfcc464-206a-40a8-edca-2f1392f05fd2'><marimo-button data-initial-value='0' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Apply Edit&lt;/span&gt;&lt;/span&gt;&quot;' data-kind='&quot;neutral&quot;' data-disabled='false' data-full-width='false'></marimo-button></marimo-ui-element>"
+            "text/html": "<marimo-ui-element object-id='emfo-0' random-id='2d29544d-eda3-5f9f-bbe8-dc9767223dc9'><marimo-button data-initial-value='0' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Apply Edit&lt;/span&gt;&lt;/span&gt;&quot;' data-kind='&quot;neutral&quot;' data-disabled='false' data-full-width='false'></marimo-button></marimo-ui-element>"
           }
         }
       ],
@@ -167,12 +191,19 @@
       "outputs": [
         {
           "type": "error",
-          "ename": "ancestor-stopped",
-          "evalue": "This cell wasn't run because an ancestor was stopped with `mo.stop`: ",
+          "ename": "exception",
+          "evalue": "Name `start_input` is not defined. It was expected to be defined in ",
           "traceback": []
         }
       ],
-      "console": []
+      "console": [
+        {
+          "type": "stream",
+          "name": "stderr",
+          "text": "<span class=\"codehilite\"><div class=\"highlight\"><pre><span></span><span class=\"gt\">Traceback (most recent call last):</span>\n  File <span class=\"nb\">&quot;/var/folders/1p/mm495q4n00x9pbn8dq60m7mc0000gn/T/marimo_18641/__marimo__cell_Hstk_.py&quot;</span>, line <span class=\"m\">4</span>, in <span class=\"n\">&lt;module&gt;</span>\n<span class=\"w\">    </span><span class=\"n\">new_start</span> <span class=\"o\">=</span> <span class=\"n\">start_input</span><span class=\"o\">.</span><span class=\"n\">value</span>\n<span class=\"w\">                </span><span class=\"pm\">^^^^^^^^^^^</span>\n<span class=\"gr\">NameError</span>: <span class=\"n\">name &#39;start_input&#39; is not defined. Did you mean: &#39;trim_input&#39;?</span>\n</pre></div>\n</span>",
+          "mimetype": "application/vnd.marimo+traceback"
+        }
+      ]
     }
   ]
 }
