@@ -201,3 +201,82 @@ def _measure_total_height(
         total += (bbox[3] - bbox[1]) + verse_padding
 
     return total
+
+
+def render_verse_image(
+    verse_num: int,
+    hebrew_text: str,
+    width: int,
+    height: int,
+    font_path: str,
+    font_size: int,
+    text_color: str = "#FFFFFF",
+    y_offset: int = 0,
+) -> Image.Image:
+    """Render a single verse as an image with transparent background.
+
+    Creates an individual verse image for use in multi-layer video composition.
+    This function enables verse-level highlighting by allowing separate rendering
+    of normal (white) and highlighted (gold) text layers.
+
+    Args:
+        verse_num: Verse number for display (e.g., 1, 2, 3)
+        hebrew_text: Hebrew text with Nikkud and T'amim
+        width: Image width in pixels
+        height: Image height in pixels
+        font_path: Path to TrueType/OpenType font file
+        font_size: Font size in points
+        text_color: Hex color for text (e.g., "#FFFFFF" or "#FFD700")
+        y_offset: Vertical offset for positioning this verse (pixels from top)
+
+    Returns:
+        PIL Image with RGBA mode (transparent background, colored text)
+
+    Example:
+        >>> # Create normal layer (white)
+        >>> normal_img = render_verse_image(
+        ...     1, "הַאֲזִ֥ינוּ הַשָּׁמַ֖יִם", 1280, 720,
+        ...     "/System/Library/Fonts/ArialHB.ttc", 40, "#FFFFFF", 20
+        ... )
+        >>> # Create highlight layer (gold)
+        >>> highlight_img = render_verse_image(
+        ...     1, "הַאֲזִ֥ינוּ הַשָּׁמַ֖יִם", 1280, 720,
+        ...     "/System/Library/Fonts/ArialHB.ttc", 40, "#FFD700", 20
+        ... )
+    """
+    logger.debug(f"{verse_num=}, {width=}, {height=}, {text_color=}, {y_offset=}")
+
+    # Create transparent image (RGBA mode for transparency support)
+    image = Image.new("RGBA", (width, height), color=(0, 0, 0, 0))
+    draw = ImageDraw.Draw(image)
+    font = ImageFont.truetype(font_path, font_size)
+
+    # Format verse with number: (1) hebrew_text
+    display_text = f"({verse_num}) {hebrew_text}"
+
+    # Calculate text wrapping area
+    scale = height / 360
+    right_margin = int(20 * scale)
+    left_margin = int(20 * scale)
+    text_width = width - left_margin - right_margin
+
+    # Wrap text to fit within image width
+    lines = _wrap_text(draw, display_text, font, text_width)
+    # Apply RTL reordering per line for Hebrew display
+    lines = [get_display(line) for line in lines]
+    wrapped_text = "\n".join(lines)
+
+    # Draw text at specified y_offset with right alignment
+    line_spacing = font_size + 5
+    draw.multiline_text(
+        (width - right_margin, y_offset),
+        wrapped_text,
+        font=font,
+        fill=text_color,
+        anchor="ra",
+        spacing=line_spacing,
+        align="right",
+    )
+
+    logger.debug(f"Rendered verse {verse_num}: {len(lines)} lines, color={text_color}")
+    return image

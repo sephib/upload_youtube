@@ -263,3 +263,8 @@ demo-wave:
 
 run-app:
     uv run marimo edit src/apps/alignment_editor.py --watch
+
+kill-db:
+    kill -9 $(lsof -t data/torah_sync.duckdb)
+
+render-video {aliya_id}:
