@@ -59,24 +59,39 @@
 
 **Goal**: Initialize YouTube integration infrastructure and dependencies
 
-- [ ] T001 Add Google YouTube API dependencies to pyproject.toml (google-api-python-client>=2.100.0, google-auth-oauthlib>=1.2.0, google-auth-httplib2>=0.2.0)
-- [ ] T002 Add YouTube configuration section to settings.toml (client_secrets_path, token_path, source_channel, default_privacy)
+**DuckDB Integration**: YouTube data will be stored in DuckDB (data/torah_sync.duckdb) following the existing repository pattern, rather than JSON files.
+
+- [x] T001 Add Google YouTube API dependencies to pyproject.toml (google-api-python-client>=2.100.0, google-auth-oauthlib>=1.2.0, google-auth-httplib2>=0.2.0) ✅ COMPLETED
+- [ ] T002 Add YouTube configuration section to settings.toml (client_secrets_path, token_path, source_channel, default_privacy, cifria attribution)
 - [ ] T003 Create config/youtube_templates.toml with CIFRIA attribution templates (metadata.default, metadata.cifria, metadata.title_format, metadata.description_format, metadata.tags)
-- [ ] T004 Create data/thumbnails/ directory structure for thumbnail cache
-- [ ] T005 Create data/playlists/ directory structure for playlist metadata
+- [ ] T004 Create data/thumbnails/ directory structure for thumbnail image cache (images only, metadata in DuckDB)
+- [ ] T005 Add YouTube DuckDB schema to src/repositories/db.py (youtube_thumbnails, youtube_uploads, youtube_playlist_meta tables with sequences and indexes)
 - [ ] T006 Add .gitignore entries for client_secrets.json and youtube_token.pickle
+- [ ] T007 Create config/ directory if it doesn't exist
 
 ---
 
-### Phase 2: Foundational - Core Models
+### Phase 2: Foundational - Core Models & Repositories
 
-**Goal**: Create data models for YouTube entities (blocking prerequisite for all user stories)
+**Goal**: Create data models and repository classes for YouTube entities (blocking prerequisite for all user stories)
 
-- [ ] T007 Create src/models/youtube_video.py with YouTubeVideo model (video_id, title, description, thumbnail_url, thumbnail_local_path, published_at, duration, view_count, privacy_status)
-- [ ] T008 Create src/models/video_mapping.py with VideoMapping model (youtube_video_id, new_video_path, parasha_name, aliyah_name, tradition, preserve_thumbnail, preserve_metadata)
-- [ ] T009 Create src/models/youtube_metadata.py with YouTubeMetadata model (video_id, title, description, tags, category_id, default_language, privacy_status, cifria_attribution)
-- [ ] T010 Create src/models/youtube_playlist.py with YouTubePlaylist model (playlist_id, parasha_name, title, description, privacy_status, video_ids, aliyah_count, is_complete(), get_aliyah_position())
-- [ ] T011 [P] Create src/services/youtube/auth.py with YouTubeAuth class (OAuth2 flow, get_credentials(), token refresh, pickle-based storage)
+**DuckDB Integration**: All models have corresponding repository classes that interact with DuckDB tables.
+
+**Models**:
+- [ ] T008 Create src/models/youtube_video.py with YouTubeVideo model (video_id, title, description, thumbnail_url, thumbnail_local_path, published_at, duration, view_count, privacy_status, alya_video_id for FK)
+- [ ] T009 Create src/models/video_mapping.py with VideoMapping model (youtube_video_id, new_video_path, alya_id for FK, preserve_thumbnail, preserve_metadata, validate_new_video_exists())
+- [ ] T010 Create src/models/youtube_metadata.py with YouTubeMetadata model (video_id, title, description, tags, category_id, default_language, privacy_status, cifria_attribution)
+- [ ] T011 Create src/models/youtube_playlist.py with YouTubePlaylist model (playlist_id FK, youtube_playlist_id, title, description, privacy_status, video_ids, aliyah_count, is_complete(), get_aliyah_position())
+- [ ] T012 Create src/models/youtube_thumbnail.py with YouTubeThumbnail model (id, video_id, original_url, cached_path, title, downloaded_at)
+- [ ] T013 Create src/models/youtube_upload.py with YouTubeUpload model (id, alya_video_id FK, old_youtube_video_id, new_youtube_video_id, thumbnail_restored, added_to_playlist, upload_status, uploaded_at)
+
+**Repositories**:
+- [ ] T014 [P] Create src/repositories/youtube_thumbnail_repo.py with YouTubeThumbnailRepository (save_thumbnail(), get_by_video_id(), list_all())
+- [ ] T015 [P] Create src/repositories/youtube_upload_repo.py with YouTubeUploadRepository (create_upload(), update_status(), get_by_alya_video(), list_pending())
+- [ ] T016 [P] Create src/repositories/youtube_playlist_meta_repo.py with YouTubePlaylistMetaRepository (create_meta(), get_by_playlist(), update_video_count(), is_complete())
+
+**Auth**:
+- [ ] T017 [P] Create src/services/youtube/auth.py with YouTubeAuth class (OAuth2 flow, get_credentials(), token refresh, pickle-based storage)
 
 ---
 
@@ -93,16 +108,16 @@
 
 **Tasks**:
 
-- [ ] T012 [P] [US1] Create src/services/youtube/channel_scanner.py with ChannelScanner class (get_channel_id_from_handle(), list_all_videos())
-- [ ] T013 [US1] Implement ChannelScanner.get_channel_id_from_handle() method to resolve @קריאהבתורהמפייוסףבודנהיימר to channel ID
-- [ ] T014 [US1] Implement ChannelScanner.list_all_videos() method with pagination support (maxResults=50, nextPageToken handling)
-- [ ] T015 [P] [US1] Create src/services/youtube/thumbnail_manager.py with ThumbnailManager class (download_thumbnail(), download_all_thumbnails(), get_cached_thumbnail())
-- [ ] T016 [US1] Implement ThumbnailManager.download_thumbnail() with httpx for downloading and caching individual thumbnails
-- [ ] T017 [US1] Implement ThumbnailManager.download_all_thumbnails() for batch thumbnail download with error handling
-- [ ] T018 [US1] Implement ThumbnailManager metadata persistence to data/thumbnails/metadata.json (original_url, cached_path, downloaded_at, title)
-- [ ] T019 [P] [US1] Create src/cli/youtube_commands.py with youtube CLI group and prepare-channel command
-- [ ] T020 [US1] Implement prepare-channel CLI command (channel handle input, progress display, success/failure reporting)
-- [ ] T021 [US1] Implement list-videos CLI command to export channel videos to JSON (video_id, title, published_at, thumbnail_url)
+- [ ] T018 [P] [US1] Create src/services/youtube/channel_scanner.py with ChannelScanner class (get_channel_id_from_handle(), list_all_videos())
+- [ ] T019 [US1] Implement ChannelScanner.get_channel_id_from_handle() method to resolve @קריאהבתורהמפייוסףבודנהיימר to channel ID
+- [ ] T020 [US1] Implement ChannelScanner.list_all_videos() method with pagination support (maxResults=50, nextPageToken handling)
+- [ ] T021 [P] [US1] Create src/services/youtube/thumbnail_manager.py with ThumbnailManager class using YouTubeThumbnailRepository (download_thumbnail(), download_all_thumbnails(), get_cached_thumbnail())
+- [ ] T022 [US1] Implement ThumbnailManager.download_thumbnail() with httpx for downloading images, save to data/thumbnails/, persist metadata to DuckDB via repository
+- [ ] T023 [US1] Implement ThumbnailManager.download_all_thumbnails() for batch thumbnail download with error handling and DuckDB batch inserts
+- [ ] T024 [US1] Implement ThumbnailManager.get_cached_thumbnail() to query DuckDB and verify file exists
+- [ ] T025 [P] [US1] Create src/cli/youtube_commands.py with youtube CLI group and prepare-channel command
+- [ ] T026 [US1] Implement prepare-channel CLI command (channel handle input, progress display, success/failure reporting, DuckDB transaction)
+- [ ] T027 [US1] Implement list-videos CLI command to export channel videos from DuckDB query (video_id, title, published_at, thumbnail_url)
 
 ---
 

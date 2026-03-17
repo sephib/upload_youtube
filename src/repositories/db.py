@@ -33,7 +33,12 @@ def close_connection() -> None:
 def ensure_schema(conn: duckdb.DuckDBPyConnection) -> None:
     """Create tables if they don't exist."""
     # Sequences for auto-increment PKs
-    for seq in ("seq_playlists", "seq_alyot", "seq_alya_audio", "seq_alya_videos", "seq_alignment_runs", "seq_alya_ranges", "seq_pasuk_alignments"):
+    for seq in (
+        "seq_playlists", "seq_alyot", "seq_alya_audio", "seq_alya_videos",
+        "seq_alignment_runs", "seq_alya_ranges", "seq_pasuk_alignments",
+        # YouTube sequences (added by Claude Sonnet 4.5)
+        "seq_youtube_thumbnails", "seq_youtube_uploads", "seq_youtube_playlist_meta"
+    ):
         conn.execute(f"CREATE SEQUENCE IF NOT EXISTS {seq}")
 
     conn.execute("""
@@ -137,3 +142,54 @@ def ensure_schema(conn: duckdb.DuckDBPyConnection) -> None:
             UNIQUE (alignment_run_id, verse_order)
         )
     """)
+
+    # YouTube Integration Tables (added by Claude Sonnet 4.5)
+    # Replaces JSON-based caching with DuckDB persistence
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS youtube_thumbnails (
+            id INTEGER PRIMARY KEY DEFAULT nextval('seq_youtube_thumbnails'),
+            video_id VARCHAR NOT NULL UNIQUE,
+            original_url VARCHAR NOT NULL,
+            cached_path VARCHAR NOT NULL,
+            title VARCHAR,
+            downloaded_at TIMESTAMP NOT NULL DEFAULT current_timestamp
+        )
+    """)
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS youtube_uploads (
+            id INTEGER PRIMARY KEY DEFAULT nextval('seq_youtube_uploads'),
+            alya_video_id INTEGER NOT NULL REFERENCES alya_videos(id),
+            old_youtube_video_id VARCHAR,
+            new_youtube_video_id VARCHAR NOT NULL,
+            thumbnail_restored BOOLEAN NOT NULL DEFAULT false,
+            added_to_playlist BOOLEAN NOT NULL DEFAULT false,
+            upload_status VARCHAR NOT NULL DEFAULT 'pending',
+            error_message VARCHAR,
+            uploaded_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
+            completed_at TIMESTAMP
+        )
+    """)
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS youtube_playlist_meta (
+            id INTEGER PRIMARY KEY DEFAULT nextval('seq_youtube_playlist_meta'),
+            playlist_id INTEGER NOT NULL UNIQUE REFERENCES playlists(id),
+            youtube_playlist_id VARCHAR NOT NULL UNIQUE,
+            title VARCHAR NOT NULL,
+            description VARCHAR,
+            privacy_status VARCHAR NOT NULL DEFAULT 'unlisted',
+            tradition VARCHAR NOT NULL DEFAULT 'Ashkenaz',
+            video_count INTEGER NOT NULL DEFAULT 0,
+            expected_video_count INTEGER NOT NULL DEFAULT 7,
+            created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
+            updated_at TIMESTAMP NOT NULL DEFAULT current_timestamp
+        )
+    """)
+
+    # YouTube indexes for performance
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_youtube_thumbnails_video_id ON youtube_thumbnails(video_id)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_youtube_uploads_alya_video ON youtube_uploads(alya_video_id)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_youtube_uploads_status ON youtube_uploads(upload_status)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_youtube_playlist_meta_playlist ON youtube_playlist_meta(playlist_id)")

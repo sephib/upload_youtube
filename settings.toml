@@ -38,3 +38,22 @@ audio_sample_rate = 16000  # 16kHz for speech alignment
 audio_channels = 1  # Mono
 min_confidence_threshold = 0.90  # Minimum alignment quality score
 max_gap_seconds = 5.0  # Maximum allowed gap between verses
+
+[default.youtube]
+# Edited by Claude Sonnet 4.5
+# YouTube API configuration
+client_secrets_path = "config/client_secrets.json"
+token_path = "config/youtube_token.pickle"
+source_channel = "@קריאהבתורהמפייוסףבודנהיימר"
+default_privacy = "unlisted"
+default_category = "27"  # Education
+
+[default.youtube.cifria]
+# CIFRIA attribution settings
+enabled = true
+attribution_required = true
+
+[default.thumbnail]
+# Thumbnail cache settings
+cache_dir = "data/thumbnails"
+preserve_original = true

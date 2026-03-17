@@ -64,3 +64,9 @@ vendor/
 *.bak
 *.orig
 data/torah_sync.duckdb.wal
+
+# YouTube API credentials (added by Claude Sonnet 4.5)
+config/client_secrets.json
+config/youtube_token.pickle
+data/thumbnails/*.jpg
+data/thumbnails/*.png
