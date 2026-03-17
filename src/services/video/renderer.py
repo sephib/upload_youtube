@@ -18,7 +18,11 @@ from src.lib.logging import get_logger
 from src.models.alignment_run import AlignmentRun
 from src.models.alya_video import AlyaVideo
 from src.models.pasuk_alignment import PasukAlignment
-from src.services.text.hebrew_renderer import render_hebrew_text_image_simple, render_verse_image
+from src.services.text.hebrew_renderer import (
+    render_hebrew_text_image_simple,
+    render_verse_image,
+    render_verses_tall_canvas,
+)
 
 logger = get_logger(__name__)
 
@@ -163,6 +167,10 @@ class VideoRenderer:
     ) -> list:
         """Create dynamic text clips with verse-level highlighting.
 
+        Automatically chooses between static and scrolling layout based on verse count:
+        - <= 6 verses: Static layout (all verses visible, dual-layer highlighting)
+        - > 6 verses: Scrolling layout (tall canvas with dynamic Y-offset)
+
         Creates two layers per verse:
         1. Normal layer (white, visible entire video)
         2. Highlight layer (gold, visible only during verse timing)
@@ -179,12 +187,25 @@ class VideoRenderer:
         Returns:
             List of ImageClips for compositing (normal layers + highlight layers)
         """
-        width, height = self.resolution
-        clips = []
-
         if not verses:
             logger.warning("No verses provided, returning empty clip list")
-            return clips
+            return []
+
+        # Use scrolling layout for > 6 verses to prevent overflow
+        if len(verses) > 6 and pasuk_alignments:
+            logger.info(
+                f"{len(verses)} verses detected (> 6), using scrolling layout"
+            )
+            return self._create_scrolling_text_clips(
+                verses=verses,
+                pasuk_alignments=pasuk_alignments,
+                audio_duration=audio_duration,
+            )
+
+        # Static layout for <= 6 verses
+        logger.info(f"{len(verses)} verses detected (<= 6), using static layout")
+        width, height = self.resolution
+        clips = []
 
         # Calculate layout - scale spacing proportionally to resolution
         scale = height / 360
@@ -242,6 +263,160 @@ class VideoRenderer:
                 )
 
         logger.info(f"Created {len(clips)} text clips ({len(verses)} verses × 2 layers)")
+
+        return clips
+
+    def _create_scrolling_text_clips(
+        self,
+        verses: list[tuple[str, str]],
+        pasuk_alignments: list[PasukAlignment],
+        audio_duration: float,
+    ) -> list:
+        """Create scrolling text clips with verse highlighting.
+
+        Implements centered scrolling where the current highlighted verse
+        is kept in the upper third of the screen. Uses a tall canvas approach
+        with dynamic Y-offset positioning.
+
+        Strategy:
+        - Layer 1: Normal canvas (scrolling, white text, always visible)
+        - Layer 2: Highlight canvases (scrolling, gold text, time-synced per verse)
+
+        Args:
+            verses: List of (reference, hebrew_text) tuples
+            pasuk_alignments: List of PasukAlignment with timestamps
+            audio_duration: Audio duration in seconds
+
+        Returns:
+            List of ImageClips for compositing (1 normal + N highlight layers)
+        """
+        width, height = self.resolution
+        clips = []
+
+        if not verses or not pasuk_alignments:
+            logger.warning("No verses or alignments provided for scrolling")
+            return clips
+
+        # Calculate layout parameters scaled to resolution
+        scale = height / 360
+        verse_spacing = int(60 * scale)
+        top_margin = int(20 * scale)
+
+        logger.info(f"Creating scrolling clips for {len(verses)} verses")
+
+        # Create normal layer canvas (white, always visible)
+        normal_canvas, verse_y_positions = render_verses_tall_canvas(
+            verses=verses,
+            width=width,
+            font_path=str(self.font_path),
+            font_size=self.font_size,
+            text_color=self.normal_color,  # White
+            verse_spacing=verse_spacing,
+            top_margin=top_margin,
+        )
+
+        # Save normal canvas to temporary file
+        normal_temp = tempfile.mktemp(suffix=".png", prefix="normal_canvas_")
+        normal_canvas.save(normal_temp)
+        logger.debug(f"Saved normal canvas: {normal_canvas.size}, path={normal_temp}")
+
+        # Create scrolling position function
+        def get_y_offset(t: float) -> int:
+            """Calculate Y offset to keep current verse in upper third of screen.
+
+            Args:
+                t: Current time in seconds
+
+            Returns:
+                Y offset in pixels (negative to scroll down)
+            """
+            # Find which verse is currently active
+            current_verse_idx = 0
+            for i, pa in enumerate(pasuk_alignments):
+                if pa.start_time <= t < pa.end_time:
+                    current_verse_idx = i
+                    break
+
+            # If past all verses, show last verse
+            if t >= pasuk_alignments[-1].end_time:
+                current_verse_idx = len(pasuk_alignments) - 1
+
+            # Calculate offset to position current verse in upper third
+            verse_y = verse_y_positions[current_verse_idx]
+            center_offset = height // 3  # Position at 1/3 from top
+            y_offset = -(verse_y - center_offset)
+
+            # Clamp to prevent showing blank space at top or bottom
+            max_offset = 0  # Don't scroll above first verse
+            min_offset = -(normal_canvas.height - height)  # Don't scroll below last verse
+            clamped_offset = max(min_offset, min(max_offset, y_offset))
+
+            return clamped_offset
+
+        # Normal layer with scrolling
+        normal_clip = (
+            ImageClip(normal_temp)
+            .with_duration(audio_duration)
+            .with_position(lambda t: ('center', get_y_offset(t)))
+        )
+        clips.append(normal_clip)
+        logger.debug("Created scrolling normal layer")
+
+        # Create highlight layers (one per verse, also scrolling)
+        for i, pa in enumerate(pasuk_alignments):
+            # Capture start_time before lambda to avoid closure issues
+            start_time = pa.start_time
+            end_time = pa.end_time
+
+            # Create highlight canvas (only this verse in gold)
+            highlight_canvas = Image.new("RGBA", normal_canvas.size, (0, 0, 0, 0))
+
+            # Extract verse number from reference
+            verse_num = pa.reference.split(":")[-1] if ":" in pa.reference else str(i + 1)
+
+            # Render verse image in gold
+            verse_img = render_verse_image(
+                verse_num=int(verse_num),
+                hebrew_text=pa.hebrew_text,
+                width=width,
+                height=verse_spacing,
+                font_path=str(self.font_path),
+                font_size=self.font_size,
+                text_color=self.highlight_color,  # Gold
+                y_offset=0,
+            )
+
+            # Paste onto highlight canvas at same Y position as normal canvas
+            highlight_canvas.paste(verse_img, (0, verse_y_positions[i]), verse_img)
+
+            # Save highlight canvas
+            highlight_temp = tempfile.mktemp(suffix=".png", prefix=f"highlight_{i}_")
+            highlight_canvas.save(highlight_temp)
+
+            # Create highlight clip (timed + scrolling)
+            # FIX: Use absolute time by adding start_time offset
+            # When .with_start() is used, moviepy calls the lambda with clip-relative time
+            # So we add start_time to convert back to absolute video time
+            highlight_clip = (
+                ImageClip(highlight_temp)
+                .with_duration(audio_duration)
+                .with_position(lambda t, st=start_time: ('center', get_y_offset(t + st)))
+                .with_start(start_time)
+                .with_end(end_time)
+            )
+            clips.append(highlight_clip)
+
+            logger.debug(
+                f"Created scrolling highlight layer for verse {i+1}: {pa.reference}, "
+                f"t={start_time:.2f}s to {end_time:.2f}s, "
+                f"position_at_start={get_y_offset(start_time)}, "
+                f"position_at_end={get_y_offset(end_time)}"
+            )
+
+        logger.info(
+            f"Created {len(clips)} scrolling clips "
+            f"(1 normal + {len(pasuk_alignments)} highlights)"
+        )
 
         return clips
 

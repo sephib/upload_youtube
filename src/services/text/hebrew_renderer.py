@@ -280,3 +280,84 @@ def render_verse_image(
 
     logger.debug(f"Rendered verse {verse_num}: {len(lines)} lines, color={text_color}")
     return image
+
+
+def render_verses_tall_canvas(
+    verses: list[tuple[str, str]],
+    width: int,
+    font_path: str,
+    font_size: int,
+    text_color: str = "#FFFFFF",
+    verse_spacing: int = 60,
+    top_margin: int = 20,
+) -> tuple[Image.Image, list[int]]:
+    """Render all verses on a tall canvas for scrolling video.
+
+    Creates a single tall canvas with all verses laid out vertically,
+    enabling smooth scrolling through the verses during video playback.
+
+    Args:
+        verses: List of (reference, hebrew_text) tuples
+        width: Canvas width in pixels
+        font_path: Path to TrueType/OpenType font file
+        font_size: Font size in points
+        text_color: Hex color for text (e.g., "#FFFFFF" or "#FFD700")
+        verse_spacing: Vertical spacing between verses in pixels
+        top_margin: Top margin in pixels
+
+    Returns:
+        tuple: (tall_canvas_image, verse_y_positions)
+            - tall_canvas_image: PIL Image with RGBA mode containing all verses
+            - verse_y_positions: List of Y coordinates for each verse's top position
+
+    Example:
+        >>> verses = [("Deuteronomy 32:1", "הַאֲזִ֥ינוּ..."), ...]
+        >>> canvas, positions = render_verses_tall_canvas(
+        ...     verses, 1280, "/System/Library/Fonts/ArialHB.ttc", 40
+        ... )
+        >>> print(f"Canvas size: {canvas.size}, Verse 1 at Y={positions[0]}")
+    """
+    logger.debug(
+        f"Creating tall canvas: {len(verses)} verses, "
+        f"{width=}px, {font_size=}pt, spacing={verse_spacing}px"
+    )
+
+    # Calculate total height needed for all verses
+    total_height = top_margin + (len(verses) * verse_spacing)
+
+    # Create tall RGBA canvas (transparent background)
+    canvas = Image.new("RGBA", (width, total_height), color=(0, 0, 0, 0))
+
+    # Track Y position for each verse
+    verse_y_positions = []
+
+    # Render each verse onto canvas at its designated position
+    for i, (ref, hebrew_text) in enumerate(verses):
+        # Extract verse number from reference
+        verse_num = ref.split(":")[-1] if ":" in ref else str(i + 1)
+
+        # Calculate Y position for this verse
+        y_pos = top_margin + (i * verse_spacing)
+        verse_y_positions.append(y_pos)
+
+        # Render verse image
+        verse_img = render_verse_image(
+            verse_num=int(verse_num),
+            hebrew_text=hebrew_text,
+            width=width,
+            height=verse_spacing,  # Each verse gets its own height slice
+            font_path=font_path,
+            font_size=font_size,
+            text_color=text_color,
+            y_offset=0,  # Draw at top of the verse slice
+        )
+
+        # Paste verse image onto tall canvas at calculated Y position
+        canvas.paste(verse_img, (0, y_pos), verse_img)
+
+        logger.debug(f"Placed verse {i+1} ({ref}) at Y={y_pos}px")
+
+    logger.info(
+        f"Created tall canvas: {width}x{total_height}px with {len(verses)} verses"
+    )
+    return canvas, verse_y_positions
