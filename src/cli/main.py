@@ -125,6 +125,77 @@ def render(alya_id: int, output: Path | None):
 
 
 @cli.command()
+@click.argument("parasha_name", type=str)
+@click.option("--output", "-o", type=click.Path(path_type=Path), help="Output directory")
+def render_playlist(parasha_name: str, output: Path | None):
+    """Render all alyot for a parasha/playlist.
+
+    PARASHA_NAME is the name of the parasha (e.g., "האזינו").
+
+    Example:
+        torah-sync render-playlist האזינו
+    """
+    logger.info(f"Rendering playlist: {parasha_name=}")
+
+    try:
+        from src.repositories.playlist_repo import PlaylistRepository
+        from src.repositories.alya_repo import AlyaRepository
+        from src.services.render_pipeline import RenderPipeline
+
+        # Find the playlist by name
+        playlist_repo = PlaylistRepository()
+        playlists = playlist_repo.list_all()
+        playlist = next((p for p in playlists if parasha_name in p.name), None)
+
+        if not playlist:
+            click.echo(f"✗ Playlist '{parasha_name}' not found", err=True)
+            click.echo(f"\nAvailable playlists:")
+            for p in playlists:
+                click.echo(f"  - {p.name}")
+            sys.exit(1)
+
+        # Get all alyot for this playlist
+        alya_repo = AlyaRepository()
+        alyot = alya_repo.list_by_playlist(playlist.id)
+
+        if not alyot:
+            click.echo(f"✗ No alyot found for '{playlist.name}'", err=True)
+            sys.exit(1)
+
+        click.echo(f"📖 Rendering {len(alyot)} alyot for {playlist.name}")
+
+        # Render each alya
+        pipeline = RenderPipeline()
+        rendered_count = 0
+        failed_count = 0
+
+        for alya in alyot:
+            try:
+                click.echo(f"\n  Rendering {alya.name} (id={alya.id})...")
+                video = pipeline.render(alya.id, output_dir=output)
+                click.echo(f"  ✓ {video.file_path} ({video.duration_seconds:.1f}s)")
+                rendered_count += 1
+            except Exception as e:
+                click.echo(f"  ✗ Failed: {e}", err=True)
+                failed_count += 1
+                logger.exception(f"Failed to render {alya.id=}")
+
+        # Summary
+        click.echo(f"\n{'='*60}")
+        click.echo(f"Rendered: {rendered_count}/{len(alyot)}")
+        if failed_count > 0:
+            click.echo(f"Failed: {failed_count}")
+            sys.exit(1)
+
+    except TorahSyncError as e:
+        click.echo(f"✗ Error: {e}", err=True)
+        sys.exit(1)
+    except Exception as e:
+        click.echo(f"✗ Unexpected error: {e}", err=True)
+        sys.exit(2)
+
+
+@cli.command()
 def status():
     """Show alignment status for all alyot in DuckDB.
 
@@ -236,6 +307,11 @@ def process(audio_file: Path, output: Path | None):
     except Exception as e:
         click.echo(f"✗ Unexpected error: {e}", err=True)
         sys.exit(2)
+
+
+# YouTube integration commands (added by Claude Sonnet 4.5)
+from src.cli.youtube_commands import youtube
+cli.add_command(youtube)
 
 
 if __name__ == "__main__":

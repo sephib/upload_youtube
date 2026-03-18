@@ -2,5 +2,7 @@
 """YouTube integration services."""
 
 from src.services.youtube.auth import YouTubeAuth
+from src.services.youtube.channel_scanner import ChannelScanner
+from src.services.youtube.thumbnail_manager import ThumbnailManager
 
-__all__ = ["YouTubeAuth"]
+__all__ = ["YouTubeAuth", "ChannelScanner", "ThumbnailManager"]
