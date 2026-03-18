@@ -138,32 +138,24 @@ def audio_waveform(audio, mo, pasuk_alignments):
 
 
 @app.cell(hide_code=True)
-def layout(mo, pasuk_alignments, waveform_ui):
-    # Edited by Claude Code
-    """Display verse table reflecting waveform region edits."""
-    _wf_regions = waveform_ui.value.get("regions", []) if waveform_ui.value else []
-    _region_map = {r["id"]: r for r in _wf_regions}
-
-    table_data = []
-    for _pa in pasuk_alignments:
-        _region = _region_map.get(str(_pa.id))
-        _start = _region["start"] if _region else _pa.start_time
-        _end = _region["end"] if _region else _pa.end_time
-        _changed = _region and (
-            abs(_start - _pa.start_time) > 0.001 or abs(_end - _pa.end_time) > 0.001
-        )
-        table_data.append({
+def layout(mo, pasuk_alignments):
+    # Edited by Claude Opus 4.6 (removed waveform_ui dep to break reactivity loop)
+    """Display verse table from DB values only — waveform shows edits visually."""
+    table_data = [
+        {
             "order": _pa.verse_order,
             "reference": _pa.reference,
             "hebrew_text": (
                 _pa.hebrew_text[:60] + ("..." if len(_pa.hebrew_text) > 60 else "")
             ),
-            "start_time": round(_start, 3),
-            "end_time": round(_end, 3),
-            "duration": round(_end - _start, 3),
+            "start_time": round(_pa.start_time, 3),
+            "end_time": round(_pa.end_time, 3),
+            "duration": round(_pa.end_time - _pa.start_time, 3),
             "confidence": round(_pa.confidence, 2),
-            "edited": "*" if _changed else "",
-        })
+            "corrected": "✓" if _pa.manually_corrected else "",
+        }
+        for _pa in pasuk_alignments
+    ]
 
     table = mo.ui.table(
         table_data,
@@ -176,7 +168,7 @@ def layout(mo, pasuk_alignments, waveform_ui):
 
 @app.cell(hide_code=True)
 def table_to_waveform(mo, pasuk_alignments, table, waveform):
-    # Edited by Claude Code
+    # Edited by Claude Opus 4.6 (guard against unnecessary trait mutations)
     """Sync table selection to waveform: seek and play the selected verse segment."""
     mo.stop(len(table.value) == 0)
 
@@ -184,8 +176,10 @@ def table_to_waveform(mo, pasuk_alignments, table, waveform):
     _selected_order = _selected_row["order"]
     _pa = next(p for p in pasuk_alignments if p.verse_order == _selected_order)
 
-    waveform.selected_region_id = str(_pa.id)
-    waveform.play_range = [_pa.start_time, _pa.end_time]
+    _new_id = str(_pa.id)
+    if waveform.selected_region_id != _new_id:
+        waveform.selected_region_id = _new_id
+        waveform.play_range = [_pa.start_time, _pa.end_time]
     return
 
 

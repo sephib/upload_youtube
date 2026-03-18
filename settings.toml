@@ -53,6 +53,12 @@ default_category = "27"  # Education
 enabled = true
 attribution_required = true
 
+[default.tracking]
+# Edited by Claude Opus 4.6
+# MLflow experiment tracking (optional: install with uv pip install torah-sync[tracking])
+mlflow_uri = "mlruns"
+experiment_name = "alignment-tuning"
+
 [default.thumbnail]
 # Thumbnail cache settings
 cache_dir = "data/thumbnails"

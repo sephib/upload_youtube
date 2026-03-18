@@ -64,6 +64,9 @@ app = [
     "anywidget>=0.9",
     "traitlets>=5.0",
 ]
+tracking = [
+    "mlflow>=2.10.0",
+]
 
 [project.scripts]
 torah-sync = "src.cli.main:cli"
@@ -129,7 +132,7 @@ warn_unused_ignores = true
 warn_no_return = true
 
 [[tool.mypy.overrides]]
-module = ["aeneas.*", "pydub.*", "moviepy.*"]
+module = ["aeneas.*", "pydub.*", "moviepy.*", "mlflow.*"]
 ignore_missing_imports = true
 
 [tool.ruff]

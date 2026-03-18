@@ -42,6 +42,7 @@ class WavesurferWidget(anywidget.AnyWidget):
         height: Height of waveform in pixels
         zoom_level: Pixels per second (horizontal zoom)
         play_range: [start, end] for isolated segment playback
+        playback_speed: Playback speed multiplier (0.5x - 2.0x, default 1.0x)
     """
 
     # Audio data (Python -> JavaScript)
@@ -72,6 +73,9 @@ class WavesurferWidget(anywidget.AnyWidget):
     play_range = traitlets.List(
         trait=traitlets.Float(), default_value=[]
     ).tag(sync=True)
+
+    # Playback speed (Python <-> JavaScript)
+    playback_speed = traitlets.Float(default_value=1.0).tag(sync=True)
 
     _esm = """
     import WaveSurfer from 'https://cdn.jsdelivr.net/npm/wavesurfer.js@7/dist/wavesurfer.esm.js';
@@ -122,6 +126,21 @@ class WavesurferWidget(anywidget.AnyWidget):
       const zoomInBtn = btn('Zoom +');
       const zoomOutBtn = btn('Zoom -');
 
+      const speedLabel = document.createElement('span');
+      speedLabel.textContent = 'Speed: ';
+      speedLabel.style.cssText = 'font-size:13px;margin-left:8px;';
+
+      const speedSelect = document.createElement('select');
+      speedSelect.style.cssText = 'padding:4px 8px;cursor:pointer;font-size:13px;border:1px solid #ccc;border-radius:4px;background:#fff;';
+      const speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
+      speeds.forEach(speed => {
+        const option = document.createElement('option');
+        option.value = speed;
+        option.textContent = `${speed}x`;
+        if (speed === 1.0) option.selected = true;
+        speedSelect.appendChild(option);
+      });
+
       const timeDisplay = document.createElement('span');
       timeDisplay.style.cssText = 'font-family:monospace;font-size:13px;margin-left:auto;';
       timeDisplay.textContent = '0:00.000 / 0:00.000';
@@ -130,7 +149,7 @@ class WavesurferWidget(anywidget.AnyWidget):
       regionInfo.style.cssText = 'margin-top:8px;padding:8px;background:#f5f5f5;border-radius:4px;font-size:13px;min-height:20px;';
       regionInfo.textContent = 'Click a region to select it';
 
-      controls.append(playPauseBtn, zoomInBtn, zoomOutBtn, timeDisplay);
+      controls.append(playPauseBtn, zoomInBtn, zoomOutBtn, speedLabel, speedSelect, timeDisplay);
       container.append(waveformDiv, controls, regionInfo);
       el.appendChild(container);
 
@@ -206,6 +225,14 @@ class WavesurferWidget(anywidget.AnyWidget):
         model.set('duration', dur);
         model.save_changes();
         timeDisplay.textContent = `0:00.000 / ${fmtTime(dur)}`;
+
+        // Set initial playback speed
+        const initialSpeed = model.get('playback_speed');
+        if (initialSpeed && initialSpeed !== 1.0) {
+          ws.setPlaybackRate(initialSpeed);
+          speedSelect.value = initialSpeed;
+        }
+
         addRegionsFromModel();
       });
 
@@ -280,6 +307,13 @@ class WavesurferWidget(anywidget.AnyWidget):
         model.save_changes();
       });
 
+      speedSelect.addEventListener('change', () => {
+        const speed = parseFloat(speedSelect.value);
+        ws.setPlaybackRate(speed);
+        model.set('playback_speed', speed);
+        model.save_changes();
+      });
+
       // ── Model change listeners ──
       model.on('change:audio_data', loadAudio);
 
@@ -317,6 +351,12 @@ class WavesurferWidget(anywidget.AnyWidget):
 
       model.on('change:progress_color', () => {
         ws.setOptions({ progressColor: model.get('progress_color') });
+      });
+
+      model.on('change:playback_speed', () => {
+        const speed = model.get('playback_speed');
+        ws.setPlaybackRate(speed);
+        speedSelect.value = speed;
       });
 
       return () => {

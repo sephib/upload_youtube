@@ -1,0 +1,230 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.21.0",
+    "script_metadata_hash": "50b29e27740b5ab14c8abda542d8cacc"
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "52a3b694bca8092686cdd9ffbd8667c9",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "df2d95d874355b48d0f416166db64bfb",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"interactive-audio-waveform-widget\">\ud83c\udfb5 Interactive Audio Waveform Widget</h1>\n<span class=\"paragraph\">A custom <code>anywidget</code> integrating <strong>wavesurfer.js</strong> for interactive audio visualization.\nDrag region boundaries to adjust segments, click regions to select them, or use the table below!</span>\n<span class=\"paragraph\">\ud83d\udca1 <strong>Try this</strong>: Drag the colored region edges in the waveform to adjust timing.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "6ab40cfdaed8ea79050ea29fc56a614f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<marimo-ui-element object-id='vblA-0' random-id='6fd03182-f0f5-60d1-665e-de919eb17a63'><marimo-file data-initial-value='[]' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Upload Audio File (optional)&lt;/span&gt;&lt;/span&gt;&quot;' data-filetypes='[&quot;.mp3&quot;,&quot;.wav&quot;,&quot;.ogg&quot;,&quot;.m4a&quot;]' data-multiple='false' data-kind='&quot;button&quot;' data-max_size='100000000'></marimo-file></marimo-ui-element>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "dd632f88a7aa9450a7ccc43942d94611",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "3b58ec7506950bc8204b04d35808b811",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "c2090acc9d1dd48bb3b047096ad9adff",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<marimo-callout-output data-html='&quot;&lt;span&gt;\ud83c\udfb9 Using generated sample (3 musical pitches: A4 \u2192 C5 \u2192 E5)&lt;/span&gt;&quot;' data-kind='&quot;info&quot;'></marimo-callout-output>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "6b43a2fa40b307af06075723fd6a0db9",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "68486878e3242cde03e81ce26b0b97ff",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "53cb76adb0704cf87ba19f58c941ee96",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "fe86a52cbb4f82395aac9c246254c364",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<div style='display: flex;flex: 1;flex-direction: row;justify-content: space-between;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><div style='flex: 3'><marimo-ui-element object-id='BYtC-0' random-id='72817f84-9a83-5481-f3b9-44334a867dcc'><marimo-anywidget data-initial-value='{&quot;model_id&quot;:&quot;af57d301230743b3a17028e52f2a6ef8&quot;}' data-label='null' data-js-url='&quot;./@file/7422-18465020-IlURy4PR.js&quot;' data-js-hash='&quot;de477185544c50d8dc4936d1e129fb1d&quot;'></marimo-anywidget></marimo-ui-element></div><div style='flex: 1'><span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><strong>State</strong></span>\n<ul>\n<li>Time: <code>1.900s / 5.000s</code></li>\n<li>Status: \u23f8\ufe0f Paused</li>\n<li>Selected: <code>main</code></li>\n<li>Regions: <code>3</code></li>\n<li>Speed: <code>1.00x</code></li>\n</ul></span></div></div>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "91d10edd0a504f487b57b949bb4cdb2a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"regions-table\">Regions Table</h2>\n<span class=\"paragraph\">Click a row to jump to that region. Drag boundaries in the waveform above to update the table!</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "emfo",
+      "code_hash": "04211fc5b80a36c227777e4ed6366a00",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<marimo-ui-element object-id='emfo-0' random-id='6f3cfc0e-59c6-80b2-3c93-a03690460569'><marimo-table data-initial-value='[]' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Audio Regions&lt;/span&gt;&lt;/span&gt;&quot;' data-data='&quot;[{&#92;&quot;ID&#92;&quot;:&#92;&quot;intro&#92;&quot;,&#92;&quot;Label&#92;&quot;:&#92;&quot;Intro (A4 - 440Hz)&#92;&quot;,&#92;&quot;Start&#92;&quot;:&#92;&quot;0.000s&#92;&quot;,&#92;&quot;End&#92;&quot;:&#92;&quot;1.000s&#92;&quot;,&#92;&quot;Duration&#92;&quot;:&#92;&quot;1.000s&#92;&quot;},{&#92;&quot;ID&#92;&quot;:&#92;&quot;main&#92;&quot;,&#92;&quot;Label&#92;&quot;:&#92;&quot;Main (C5 - 523Hz)&#92;&quot;,&#92;&quot;Start&#92;&quot;:&#92;&quot;1.000s&#92;&quot;,&#92;&quot;End&#92;&quot;:&#92;&quot;3.500s&#92;&quot;,&#92;&quot;Duration&#92;&quot;:&#92;&quot;2.500s&#92;&quot;},{&#92;&quot;ID&#92;&quot;:&#92;&quot;outro&#92;&quot;,&#92;&quot;Label&#92;&quot;:&#92;&quot;Outro (E5 - 659Hz)&#92;&quot;,&#92;&quot;Start&#92;&quot;:&#92;&quot;3.500s&#92;&quot;,&#92;&quot;End&#92;&quot;:&#92;&quot;5.000s&#92;&quot;,&#92;&quot;Duration&#92;&quot;:&#92;&quot;1.500s&#92;&quot;}]&quot;' data-total-rows='3' data-total-columns='5' data-max-columns='50' data-banner-text='&quot;&quot;' data-pagination='false' data-page-size='10' data-selection='&quot;single&quot;' data-show-filters='false' data-show-download='false' data-show-column-summaries='false' data-show-data-types='true' data-show-page-size-selector='false' data-show-column-explorer='true' data-show-chart-builder='true' data-row-headers='[]' data-has-stable-row-id='false' data-lazy='false' data-preload='false' data-download-file-name='&quot;table_data&quot;'></marimo-table></marimo-ui-element>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "7c5585b26333f755175a3e8509af4b44",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "2b4c3f7fbd4b25d43571a9cc034c0101",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"export\">Export</h2>\n<span class=\"paragraph\">Save your annotated regions as JSON:</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "iLit",
+      "code_hash": "79e9949dca8d2113e4474c5d858a7800",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<marimo-ui-element object-id='iLit-0' random-id='50402166-2b6f-9951-9a91-47ebb4c24fa7'><marimo-button data-initial-value='0' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;\ud83d\udce5 Export Regions&lt;/span&gt;&lt;/span&gt;&quot;' data-kind='&quot;neutral&quot;' data-disabled='false' data-full-width='false'></marimo-button></marimo-ui-element>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ZHCJ",
+      "code_hash": "a2bafdb92925f53e40aabb2f68249281",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ROlb",
+      "code_hash": "dfae224d232db2cb417bd9d33455ca95",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><hr />\n<h2 id=\"how-it-works\">How It Works</h2>\n<span class=\"paragraph\">This widget combines:</span>\n<ul>\n<li><strong><a href=\"https://anywidget.dev/\" rel=\"noopener noreferrer\" target=\"_blank\">anywidget</a></strong> - Portable widget framework</li>\n<li><strong><a href=\"https://wavesurfer.xyz/\" rel=\"noopener noreferrer\" target=\"_blank\">wavesurfer.js</a></strong> - Audio visualization (loaded from CDN)</li>\n<li><strong><a href=\"https://marimo.io/\" rel=\"noopener noreferrer\" target=\"_blank\">marimo</a></strong> - Reactive Python notebooks</li>\n</ul>\n<h3 id=\"key-features\">Key Features</h3>\n<ul>\n<li><strong>Bidirectional sync</strong>: Python \u2194 JavaScript state automatically synchronized via traitlets</li>\n<li><strong>Multi-pitch audio</strong>: Generated sample uses 3 musical notes (A4, C5, E5) forming A major chord</li>\n<li><strong>File upload support</strong>: Upload your own audio files (MP3, WAV, OGG, M4A)</li>\n<li><strong>Self-contained</strong>: Works immediately - no build step, no external dependencies</li>\n<li><strong>Interactive</strong>: Drag regions, click table rows, play audio - everything updates reactively</li>\n</ul>\n<h3 id=\"use-cases\">Use Cases</h3>\n<ul>\n<li>Audio transcription and annotation</li>\n<li>Podcast chapter marking</li>\n<li>Music analysis (verse/chorus/bridge)</li>\n<li>Language learning with sentence-level audio</li>\n</ul>\n<hr />\n<span class=\"paragraph\"><strong>Resources</strong>:\n<a href=\"https://wavesurfer.xyz/docs/\" rel=\"noopener noreferrer\" target=\"_blank\">wavesurfer.js docs</a> \u2022\n<a href=\"https://anywidget.dev/en/getting-started/\" rel=\"noopener noreferrer\" target=\"_blank\">anywidget guide</a> \u2022\n<a href=\"https://marimo.io/gallery\" rel=\"noopener noreferrer\" target=\"_blank\">marimo gallery</a></span></span>"
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}

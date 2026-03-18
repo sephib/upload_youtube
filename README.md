@@ -35,12 +35,159 @@ curl -L "https://github.com/google/fonts/raw/main/ofl/frankruhl/FrankRuhl-Regula
 
 ### Basic Usage
 
-```bash
-# Process a single audio file
-uv run torah-sync "data/audio/פרשת האזינו - ראשון - נוסח אשכנז.mp4"
+#### Legacy: Single-Step Processing
 
-# Batch process all audio files
-uv run torah-sync batch data/audio/
+```bash
+# Process a single audio file (align + render in one step)
+uv run torah-sync process "data/audio/פרשת האזינו - ראשון - נוסח אשכנז.mp4"
+```
+
+#### Modern: Three-Phase Pipeline
+
+For better control and manual correction capability:
+
+```bash
+# Phase 1: Align audio with Hebrew text
+uv run torah-sync align "data/audio/פרשת האזינו - ראשון - נוסח אשכנז.mp4"
+
+# Phase 2: (Optional) Manual correction
+uv run torah-sync correct 1  # Opens marimo app
+
+# Phase 3: Render video
+uv run torah-sync render 1
+```
+
+## Video Rendering
+
+### Check Alignment Status
+
+Before rendering, check which alyot are available:
+
+```bash
+uv run torah-sync status
+```
+
+Output example:
+```
+📖 האזינו (Deuteronomy)
+  ✅ ראשון (id=1, state=aligned quality=0.95 [corrected])
+  ✅ שני (id=2, state=aligned quality=0.92)
+  ✅ שלישי (id=3, state=aligned quality=0.94)
+  ...
+```
+
+### Render Single Alya
+
+Generate a video for one aliyah:
+
+```bash
+# Render video for alya ID 1
+uv run torah-sync render 1
+
+# Specify custom output directory
+uv run torah-sync render 1 --output ./my-videos/
+```
+
+**Output**: `output/videos/האזינו_ראשון_sync.mp4`
+
+**Video Features**:
+- **Resolution**: 1280×720 (720p HD)
+- **Frame Rate**: 30 FPS
+- **Highlighting**: Karaoke-style verse-by-verse in gold
+- **Scrolling**: Auto-enabled for 7+ verses
+- **Hebrew Text**: Full nikkud (vowels) and te'amim (cantillation marks)
+
+### Render Entire Playlist
+
+To render all alyot for a parasha:
+
+**Method 1: Manual Sequential Rendering**
+
+```bash
+# Get the list of alya IDs
+uv run torah-sync status
+
+# Render each alya
+uv run torah-sync render 1
+uv run torah-sync render 2
+uv run torah-sync render 3
+# ... continue for all alyot
+```
+
+**Method 2: Bash Loop (Sequential IDs)**
+
+If your alyot have sequential IDs (e.g., 1-7 for Ha'azinu):
+
+```bash
+# Render alyot 1 through 7
+for alya_id in {1..7}; do
+  echo "Rendering alya $alya_id..."
+  uv run torah-sync render $alya_id
+done
+```
+
+**Method 3: Extract IDs from Status**
+
+For non-sequential IDs, extract them from status output:
+
+```bash
+# Render all alyot for Ha'azinu parasha
+uv run torah-sync status | \
+  grep "📖 האזינו" -A 10 | \
+  grep -oE "id=[0-9]+" | \
+  cut -d= -f2 | \
+  xargs -I {} sh -c 'echo "Rendering alya {}..." && uv run torah-sync render {}'
+```
+
+**Method 4: Python Script**
+
+For more control, create a Python script:
+
+```python
+from src.repositories.playlist_repo import PlaylistRepository
+from src.repositories.alya_repo import AlyaRepository
+from src.services.render_pipeline import RenderPipeline
+
+# Get all alyot for Ha'azinu
+playlist_repo = PlaylistRepository()
+alya_repo = AlyaRepository()
+
+playlists = playlist_repo.list_all()
+haazinu = next(p for p in playlists if "האזינו" in p.name)
+alyot = alya_repo.list_by_playlist(haazinu.id)
+
+# Render each alya
+pipeline = RenderPipeline()
+for alya in alyot:
+    print(f"Rendering {alya.name}...")
+    video = pipeline.render(alya.id)
+    print(f"✓ Created: {video.file_path}")
+```
+
+### Troubleshooting
+
+**Database Lock Error**:
+```
+Error: Could not set lock on file "data/torah_sync.duckdb"
+```
+
+**Solution**: Close the marimo alignment editor before rendering:
+```bash
+# Kill marimo processes
+pkill -f marimo
+
+# Then retry rendering
+uv run torah-sync render 1
+```
+
+**Missing Alignment Data**:
+```
+Error: No alignment run found
+```
+
+**Solution**: Run the alignment phase first:
+```bash
+uv run torah-sync align "data/audio/file.mp4"
 ```
 
 ## Architecture
@@ -49,6 +196,9 @@ uv run torah-sync batch data/audio/
 - **Alignment**: aeneas (forced alignment) produces per-verse `PasukAlignment` records
 - **Text**: Sefaria API for Hebrew text with vowels and cantillation marks
 - **Video**: moviepy renders highlighted text synchronized to audio
+  - **Dual-layer rendering**: White text (always visible) + Gold highlight (timed per verse)
+  - **Auto-scrolling**: Enabled for 7+ verses to keep current verse visible
+  - **Verse-level highlighting**: Karaoke-style gold highlighting synced to audio timestamps
 
 ## Documentation
 

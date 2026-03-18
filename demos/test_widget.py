@@ -99,9 +99,29 @@ def test_widget_properties():
     print("✅ All properties working correctly")
 
 
+def test_playback_speed():
+    """Test playback speed control."""
+    print("\nTest 5: Testing playback speed...")
+    widget = WavesurferWidget()
+
+    # Default speed
+    assert widget.playback_speed == 1.0, "Default speed should be 1.0x"
+
+    # Set speed
+    widget.playback_speed = 1.5
+    assert widget.playback_speed == 1.5, "Speed should update to 1.5x"
+
+    # Test all supported speeds
+    for speed in [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0]:
+        widget.playback_speed = speed
+        assert widget.playback_speed == speed, f"Speed should be {speed}x"
+
+    print("✅ Playback speed control works")
+
+
 def test_esm_module():
     """Test that ESM module is defined."""
-    print("\nTest 5: Checking ESM module...")
+    print("\nTest 6: Checking ESM module...")
     widget = WavesurferWidget()
     assert hasattr(widget, "_esm")
     assert "WaveSurfer" in widget._esm
@@ -121,6 +141,7 @@ def main():
         test_widget_with_audio()
         test_widget_with_regions()
         test_widget_properties()
+        test_playback_speed()
         test_esm_module()
 
         print("\n" + "=" * 60)

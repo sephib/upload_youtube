@@ -115,6 +115,24 @@ class PasukAlignmentRepository:
         conn = get_connection()
         conn.execute("DELETE FROM pasuk_alignments WHERE id = ?", [pa_id])
 
+    def list_corrected(self) -> list[PasukAlignment]:
+        """List all manually corrected pasuk alignments with original timestamps.
+
+        Returns only rows where manually_corrected=true AND original times are set,
+        giving (predicted, corrected) timestamp pairs for evaluation.
+        """
+        conn = get_connection()
+        rows = conn.execute(
+            """
+            SELECT * FROM pasuk_alignments
+            WHERE manually_corrected = true
+              AND original_start_time IS NOT NULL
+              AND original_end_time IS NOT NULL
+            ORDER BY alignment_run_id, verse_order
+            """,
+        ).fetchall()
+        return [self._row_to_model(row) for row in rows]
+
     def delete_by_alignment_run(self, alignment_run_id: int) -> None:
         """Delete all pasuk alignments for an alignment run."""
         conn = get_connection()

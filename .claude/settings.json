@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "ExitPlanMode"
+      "ExitPlanMode",
+      "AskUserQuestion",
+      "Write"
     ]
   }
 }

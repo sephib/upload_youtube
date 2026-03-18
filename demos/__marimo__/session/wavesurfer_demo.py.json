@@ -7,77 +7,25 @@
   "cells": [
     {
       "id": "MJUe",
-      "code_hash": "fca4f477fd2f7830e943418f9a94f009",
+      "code_hash": "8fbbbd9174450f795c84742026fc7524",
       "outputs": [
         {
           "type": "data",
           "data": {
-            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"interactive-audio-waveform-visualization\">\ud83c\udfb5 Interactive Audio Waveform Visualization</h1>\n<span class=\"paragraph\">This demo showcases a custom <code>anywidget</code> that integrates <strong>wavesurfer.js</strong> with marimo\nfor interactive audio waveform visualization and segment annotation.</span>\n<h2 id=\"features\">Features</h2>\n<ul>\n<li>\ud83c\udfa8 <strong>Visual Waveform</strong>: See your audio as an interactive waveform</li>\n<li>\ud83c\udff7\ufe0f <strong>Draggable Regions</strong>: Mark segments with labels and colors</li>\n<li>\u23ef\ufe0f <strong>Playback Controls</strong>: Play/pause with live time tracking</li>\n<li>\ud83d\udd04 <strong>Two-Way Sync</strong>: Click table rows or waveform regions for bidirectional updates</li>\n<li>\ud83d\udccf <strong>Timeline</strong>: Time axis for precise positioning</li>\n</ul>\n<hr /></span>"
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"interactive-audio-waveform-visualization\">Interactive Audio Waveform Visualization</h1>\n<span class=\"paragraph\">Custom <code>anywidget</code> integrating <strong>wavesurfer.js</strong> with marimo for interactive\naudio waveform visualization and segment annotation.</span>\n<span class=\"paragraph\"><strong>Features</strong>: Zoom controls, confidence-based region coloring,\nisolated segment playback, bidirectional table sync.</span>\n<hr /></span>"
           }
         }
       ],
       "console": []
     },
     {
-      "id": "bkHC",
-      "code_hash": "5b557f3bfa25303c8e33bce1f4c53092",
+      "id": "ZHCJ",
+      "code_hash": "1650f2edb909842004ddc98e208dd300",
       "outputs": [
         {
           "type": "data",
           "data": {
-            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-1-load-sample-audio\">Step 1: Load Sample Audio</h2>\n<span class=\"paragraph\">For this demo, you'll need to provide an audio file. You can:</span>\n<ol>\n<li><strong>Upload an MP3/WAV file</strong> using the file picker below, OR</li>\n<li><strong>Use a sample file</strong> from your project (e.g., Torah reading audio)</li>\n</ol>\n<span class=\"paragraph\">Supported formats: MP3, WAV, OGG, M4A</span></span>"
-          }
-        }
-      ],
-      "console": []
-    },
-    {
-      "id": "Xref",
-      "code_hash": "0e8bebfa538f0cbde462d48d9dea6a91",
-      "outputs": [
-        {
-          "type": "data",
-          "data": {
-            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-2-define-audio-regions\">Step 2: Define Audio Regions</h2>\n<span class=\"paragraph\">Regions represent segments of audio with start/end times and labels.\nThese could be:</span>\n<ul>\n<li>Verses in a Torah reading</li>\n<li>Chapters in a podcast</li>\n<li>Speakers in an interview</li>\n<li>Sections in a song</li>\n</ul>\n<span class=\"paragraph\">Modify the regions below or let them auto-generate based on audio duration!</span></span>"
-          }
-        }
-      ],
-      "console": []
-    },
-    {
-      "id": "Kclp",
-      "code_hash": "b79ba783076acceaa9eb637b82f77bcd",
-      "outputs": [
-        {
-          "type": "data",
-          "data": {
-            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-4-regions-table-two-way-sync\">Step 4: Regions Table (Two-Way Sync)</h2>\n<span class=\"paragraph\">Click a row in the table to seek to that region in the waveform.\nDrag region boundaries in the waveform to update the table!</span></span>"
-          }
-        }
-      ],
-      "console": []
-    },
-    {
-      "id": "iLit",
-      "code_hash": "5dad775d4295a55f7e3180ea45a7b486",
-      "outputs": [
-        {
-          "type": "data",
-          "data": {
-            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-5-export-annotations\">Step 5: Export Annotations</h2>\n<span class=\"paragraph\">Save your annotated regions as JSON for use in other applications!</span></span>"
-          }
-        }
-      ],
-      "console": []
-    },
-    {
-      "id": "qnkX",
-      "code_hash": "48d1f24436d3db7596b153e004ddc580",
-      "outputs": [
-        {
-          "type": "data",
-          "data": {
-            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><hr />\n<h2 id=\"how-it-works\">\ud83d\udee0\ufe0f How It Works</h2>\n<span class=\"paragraph\">This widget is built with:</span>\n<ul>\n<li><strong><a href=\"https://anywidget.dev/\" rel=\"noopener noreferrer\" target=\"_blank\">anywidget</a></strong>: Framework for portable Jupyter/marimo widgets</li>\n<li><strong><a href=\"https://wavesurfer.xyz/\" rel=\"noopener noreferrer\" target=\"_blank\">wavesurfer.js</a></strong>: JavaScript audio waveform visualization library</li>\n<li><strong><a href=\"https://marimo.io/\" rel=\"noopener noreferrer\" target=\"_blank\">marimo</a></strong>: Reactive Python notebooks</li>\n</ul>\n<h3 id=\"architecture\">Architecture</h3>\n<div class=\"language-verilog codehilite\"><pre><span></span><code><span class=\"err\">\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510</span>\n<span class=\"err\">\u2502</span><span class=\"w\"> </span><span class=\"nl\">Python:</span><span class=\"w\"> </span><span class=\"n\">WavesurferWidget</span><span class=\"w\">           </span><span class=\"err\">\u2502</span>\n<span class=\"err\">\u2502</span><span class=\"w\">  </span><span class=\"o\">-</span><span class=\"w\"> </span><span class=\"n\">audio_data</span><span class=\"w\"> </span><span class=\"p\">(</span><span class=\"n\">bytes</span><span class=\"p\">)</span><span class=\"w\">               </span><span class=\"err\">\u2502</span>\n<span class=\"err\">\u2502</span><span class=\"w\">  </span><span class=\"o\">-</span><span class=\"w\"> </span><span class=\"n\">regions</span><span class=\"w\"> </span><span class=\"p\">(</span><span class=\"n\">list</span><span class=\"w\"> </span><span class=\"n\">of</span><span class=\"w\"> </span><span class=\"n\">dicts</span><span class=\"p\">)</span><span class=\"w\">          </span><span class=\"err\">\u2502</span>\n<span class=\"err\">\u2502</span><span class=\"w\">  </span><span class=\"o\">-</span><span class=\"w\"> </span><span class=\"n\">current_time</span><span class=\"w\"> </span><span class=\"p\">(</span><span class=\"n\">float</span><span class=\"p\">)</span><span class=\"w\">             </span><span class=\"err\">\u2502</span>\n<span class=\"err\">\u2502</span><span class=\"w\">  </span><span class=\"o\">-</span><span class=\"w\"> </span><span class=\"n\">is_playing</span><span class=\"w\"> </span><span class=\"p\">(</span><span class=\"n\">bool</span><span class=\"p\">)</span><span class=\"w\">                </span><span class=\"err\">\u2502</span>\n<span class=\"err\">\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518</span>\n<span class=\"w\">               </span><span class=\"err\">\u2502</span><span class=\"w\"> </span><span class=\"n\">traitlets</span><span class=\"w\"> </span><span class=\"n\">sync</span>\n<span class=\"err\">\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u25bc\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510</span>\n<span class=\"err\">\u2502</span><span class=\"w\"> </span><span class=\"nl\">JavaScript:</span><span class=\"w\"> </span><span class=\"n\">wavesurfer</span><span class=\"p\">.</span><span class=\"n\">js</span><span class=\"w\"> </span><span class=\"n\">ESM</span><span class=\"w\">       </span><span class=\"err\">\u2502</span>\n<span class=\"err\">\u2502</span><span class=\"w\">  </span><span class=\"o\">-</span><span class=\"w\"> </span><span class=\"n\">Load</span><span class=\"w\"> </span><span class=\"n\">audio</span><span class=\"w\"> </span><span class=\"n\">from</span><span class=\"w\"> </span><span class=\"n\">data</span><span class=\"w\"> </span><span class=\"n\">URL</span><span class=\"w\">         </span><span class=\"err\">\u2502</span>\n<span class=\"err\">\u2502</span><span class=\"w\">  </span><span class=\"o\">-</span><span class=\"w\"> </span><span class=\"n\">Render</span><span class=\"w\"> </span><span class=\"n\">waveform</span><span class=\"w\"> </span><span class=\"o\">+</span><span class=\"w\"> </span><span class=\"n\">regions</span><span class=\"w\">        </span><span class=\"err\">\u2502</span>\n<span class=\"err\">\u2502</span><span class=\"w\">  </span><span class=\"o\">-</span><span class=\"w\"> </span><span class=\"n\">Emit</span><span class=\"w\"> </span><span class=\"n\">events</span><span class=\"w\"> </span><span class=\"err\">\u2192</span><span class=\"w\"> </span><span class=\"n\">update</span><span class=\"w\"> </span><span class=\"n\">Python</span><span class=\"w\">      </span><span class=\"err\">\u2502</span>\n<span class=\"err\">\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518</span>\n</code></pre></div>\n<h3 id=\"key-features\">Key Features</h3>\n<ol>\n<li><strong>Bidirectional State Sync</strong>: Changes in Python update the waveform; drag events in JS update Python</li>\n<li><strong>CDN Loading</strong>: No build step required - wavesurfer.js loads from CDN</li>\n<li><strong>Reactive</strong>: marimo automatically updates dependent cells when widget state changes</li>\n<li><strong>Portable</strong>: The same widget works in Jupyter, JupyterLab, Google Colab, and marimo</li>\n</ol>\n<h3 id=\"use-cases\">Use Cases</h3>\n<ul>\n<li><strong>Audio Transcription</strong>: Mark speaker turns or topics</li>\n<li><strong>Music Analysis</strong>: Annotate verses, choruses, bridges</li>\n<li><strong>Torah Study</strong>: Align Hebrew verses with audio recordings</li>\n<li><strong>Podcast Production</strong>: Chapter markers and segment boundaries</li>\n<li><strong>Language Learning</strong>: Sentence-level audio alignment</li>\n</ul>\n<hr />\n<h2 id=\"resources\">\ud83d\udcda Resources</h2>\n<ul>\n<li><a href=\"https://github.com/your-repo/src/widgets/wavesurfer_widget.py\" rel=\"noopener noreferrer\" target=\"_blank\">WavesurferWidget Source Code</a></li>\n<li><a href=\"https://wavesurfer.xyz/docs/\" rel=\"noopener noreferrer\" target=\"_blank\">wavesurfer.js Documentation</a></li>\n<li><a href=\"https://anywidget.dev/en/getting-started/\" rel=\"noopener noreferrer\" target=\"_blank\">anywidget Getting Started</a></li>\n<li><a href=\"https://marimo.io/gallery\" rel=\"noopener noreferrer\" target=\"_blank\">marimo Gallery</a></li>\n</ul>\n<hr />\n<span class=\"paragraph\"><strong>Created by</strong>: Torah Sync Project\n<strong>Date</strong>: 2026-03-16\n<strong>License</strong>: MIT</span></span>"
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><hr />\n<h2 id=\"region-color-legend\">Region Color Legend</h2>\n<table>\n<thead>\n<tr>\n<th>Color</th>\n<th>Meaning</th>\n<th>Condition</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>Cornflower Blue</td>\n<td>Normal alignment</td>\n<td>confidence &gt;= 0.85</td>\n</tr>\n<tr>\n<td>Orange</td>\n<td>Low confidence</td>\n<td>confidence &lt; 0.85</td>\n</tr>\n<tr>\n<td>Gold</td>\n<td>Currently selected</td>\n<td>user clicked region</td>\n</tr>\n<tr>\n<td>Green</td>\n<td>Manually corrected</td>\n<td>corrected = True</td>\n</tr>\n</tbody>\n</table>\n<h2 id=\"architecture\">Architecture</h2>\n<div class=\"language-actionscript3 codehilite\"><pre><span></span><code><span class=\"n\">Python</span><span class=\"o\">:</span><span class=\"w\"> </span><span class=\"n\">WavesurferWidget</span><span class=\"w\"> </span><span class=\"o\">(</span><span class=\"n\">anywidget</span><span class=\"w\"> </span><span class=\"o\">+</span><span class=\"w\"> </span><span class=\"n\">traitlets</span><span class=\"o\">)</span>\n<span class=\"w\">  </span><span class=\"n\">audio_data</span><span class=\"o\">,</span><span class=\"w\"> </span><span class=\"n\">regions</span><span class=\"o\">,</span><span class=\"w\"> </span><span class=\"n\">current_time</span><span class=\"o\">,</span><span class=\"w\"> </span><span class=\"n\">is_playing</span><span class=\"o\">,</span>\n<span class=\"w\">  </span><span class=\"n\">selected_region_id</span><span class=\"o\">,</span><span class=\"w\"> </span><span class=\"n\">zoom_level</span><span class=\"o\">,</span><span class=\"w\"> </span><span class=\"n\">play_range</span><span class=\"o\">,</span><span class=\"w\"> </span><span class=\"n\">duration</span>\n<span class=\"w\">                </span><span class=\"o\">|</span><span class=\"w\"> </span><span class=\"n\">traitlets</span><span class=\"w\"> </span><span class=\"n\">sync</span>\n<span class=\"n\">JavaScript</span><span class=\"o\">:</span><span class=\"w\"> </span><span class=\"n\">wavesurfer</span><span class=\"o\">.</span><span class=\"na\">js</span><span class=\"w\"> </span><span class=\"n\">v7</span><span class=\"w\"> </span><span class=\"o\">(</span><span class=\"n\">ESM</span><span class=\"w\"> </span><span class=\"n\">from</span><span class=\"w\"> </span><span class=\"n\">CDN</span><span class=\"o\">)</span>\n<span class=\"w\">  </span><span class=\"n\">Regions</span><span class=\"w\"> </span><span class=\"n\">plugin</span><span class=\"w\"> </span><span class=\"o\">(</span><span class=\"n\">drag</span><span class=\"sr\">/resize/</span><span class=\"n\">click</span><span class=\"o\">)</span>\n<span class=\"w\">  </span><span class=\"n\">Timeline</span><span class=\"w\"> </span><span class=\"n\">plugin</span><span class=\"w\"> </span><span class=\"o\">(</span><span class=\"n\">time</span><span class=\"w\"> </span><span class=\"n\">axis</span><span class=\"o\">)</span>\n<span class=\"w\">  </span><span class=\"n\">Zoom</span><span class=\"w\"> </span><span class=\"n\">via</span><span class=\"w\"> </span><span class=\"n\">minPxPerSec</span>\n<span class=\"w\">  </span><span class=\"n\">play_range</span><span class=\"w\"> </span><span class=\"o\">-&gt;</span><span class=\"w\"> </span><span class=\"n\">play</span><span class=\"o\">(</span><span class=\"n\">start</span><span class=\"o\">)</span><span class=\"w\"> </span><span class=\"o\">+</span><span class=\"w\"> </span><span class=\"n\">stop</span><span class=\"w\"> </span><span class=\"n\">at</span><span class=\"w\"> </span><span class=\"n\">end</span>\n</code></pre></div>\n<hr />\n<span class=\"paragraph\"><strong>Created by</strong>: Torah Sync Project | <strong>Edited by Claude Code</strong></span></span>"
           }
         }
       ],
@@ -98,12 +46,25 @@
     },
     {
       "id": "vblA",
-      "code_hash": "c8f14f8bf7d2cdeabba883c4e1f6f45a",
+      "code_hash": "6c8e7ed1b87cde86ad44d12167889f7f",
       "outputs": [
         {
           "type": "data",
           "data": {
-            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><strong>Widget imported successfully!</strong> \u2705</span></span>"
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Widget imported successfully.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "e0078b588ebf2b857eaca644904d1225",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<marimo-ui-element object-id='bkHC-0' random-id='cf0a1554-9820-e256-1783-f1bb85c90a4b'><marimo-file data-initial-value='[]' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Upload Audio File&lt;/span&gt;&lt;/span&gt;&quot;' data-filetypes='[&quot;.mp3&quot;,&quot;.wav&quot;,&quot;.ogg&quot;,&quot;.m4a&quot;]' data-multiple='false' data-kind='&quot;button&quot;' data-max_size='100000000'></marimo-file></marimo-ui-element>"
           }
         }
       ],
@@ -111,12 +72,12 @@
     },
     {
       "id": "lEQa",
-      "code_hash": "9d57d4bf295f4a2c30a18ffd412380e9",
+      "code_hash": "401a044a06c499e44812bfcf77cad5d7",
       "outputs": [
         {
           "type": "data",
           "data": {
-            "text/html": "<marimo-ui-element object-id='lEQa-0' random-id='3c67d76d-439f-dd27-1e41-81a0357cc2f9'><marimo-file data-initial-value='[]' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Upload Audio File&lt;/span&gt;&lt;/span&gt;&quot;' data-filetypes='[&quot;.mp3&quot;,&quot;.wav&quot;,&quot;.ogg&quot;,&quot;.m4a&quot;]' data-multiple='false' data-kind='&quot;button&quot;' data-max_size='100000000'></marimo-file></marimo-ui-element>"
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><strong>Using sample:</strong> sample.mp3</span></span>"
           }
         }
       ],
@@ -124,12 +85,25 @@
     },
     {
       "id": "PKri",
-      "code_hash": "aab96a52a833c1b36bdaed508319dd8b",
+      "code_hash": "1a286e94fd887ba872b8ac3556d450cb",
       "outputs": [
         {
           "type": "data",
           "data": {
-            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">\u2705 <strong>Loaded:</strong> \u05e4\u05e8\u05e9\u05ea \u05d4\u05d0\u05d6\u05d9\u05e0\u05d5 - \u05e9\u05dc\u05d9\u05e9\u05d9 - \u05e0\u05d5\u05e1\u05d7 \u05d0\u05e9\u05db\u05e0\u05d6.mp3</span></span>"
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "1ce633dabc5e5753e3de3dcf170a9d17",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-2-interactive-waveform\">Step 2: Interactive Waveform</h2>\n<ul>\n<li><strong>Zoom</strong>: Use Zoom +/- buttons or set via slider below</li>\n<li><strong>Regions</strong>: Drag edges to resize, drag body to move</li>\n<li><strong>Colors</strong>: Blue = normal, Orange = low confidence, Green = corrected, Gold = selected</li>\n</ul></span>"
           }
         }
       ],
@@ -137,12 +111,12 @@
     },
     {
       "id": "SFPL",
-      "code_hash": "2b56a140f6725d278133ce113fd06f5c",
+      "code_hash": "9762b7d7b53c97eb2252ed5d1665221d",
       "outputs": [
         {
           "type": "data",
           "data": {
-            "text/plain": ""
+            "text/html": "<marimo-ui-element object-id='Xref-0' random-id='e79a80e0-833a-4746-e6f6-f8240b23b7b9'><marimo-anywidget data-initial-value='{&quot;model_id&quot;:&quot;c8b83302137343f386cd8f7b7367df5e&quot;}' data-label='null' data-js-url='&quot;./@file/8900-18167122-msE9BdRF.js&quot;' data-js-hash='&quot;20f5d351a5c86034bc981f7da0e63086&quot;'></marimo-anywidget></marimo-ui-element>"
           }
         }
       ],
@@ -150,12 +124,12 @@
     },
     {
       "id": "BYtC",
-      "code_hash": "48db7deeb019efc5889f424416b4d4c4",
+      "code_hash": "9d41f87930f96ade7e9a02f9be283163",
       "outputs": [
         {
           "type": "data",
           "data": {
-            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-3-interactive-waveform\">Step 3: Interactive Waveform</h2></span>"
+            "text/html": "<marimo-ui-element object-id='BYtC-0' random-id='0c4dd4a0-522c-3a7b-a198-493ca0e0501d'><marimo-slider data-initial-value='50' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Zoom (px/sec)&lt;/span&gt;&lt;/span&gt;&quot;' data-start='10' data-stop='500' data-step='10' data-steps='[]' data-debounce='false' data-disabled='false' data-orientation='&quot;horizontal&quot;' data-show-value='false' data-include-input='false' data-full-width='false'></marimo-slider></marimo-ui-element>"
           }
         }
       ],
@@ -163,12 +137,25 @@
     },
     {
       "id": "RGSE",
-      "code_hash": "9762b7d7b53c97eb2252ed5d1665221d",
+      "code_hash": "f333bc26c839b3e5820963219dfb1850",
       "outputs": [
         {
           "type": "data",
           "data": {
-            "text/html": "<marimo-ui-element object-id='BYtC-0' random-id='bcc5ea4c-d580-09ec-9ff6-fcac7c99483c'><marimo-anywidget data-initial-value='{&quot;model_id&quot;:&quot;d1d5e7e96c9c4000969f502f4e3e3ef0&quot;}' data-label='null' data-js-url='&quot;./@file/7095-14553356-agimUOaj.js&quot;' data-js-hash='&quot;e706744de40ae924b967266782f3a2e7&quot;'></marimo-anywidget></marimo-ui-element>"
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "1758050f24fbbf93aeb029c33021cf40",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<marimo-ui-element object-id='Kclp-0' random-id='55c7f7c0-c682-011d-1b60-60c75c80e6a7'><marimo-table data-initial-value='[]' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Audio Regions&lt;/span&gt;&lt;/span&gt;&quot;' data-data='&quot;[{&#92;&quot;ID&#92;&quot;:&#92;&quot;intro&#92;&quot;,&#92;&quot;Label&#92;&quot;:&#92;&quot;Introduction&#92;&quot;,&#92;&quot;Start (s)&#92;&quot;:0.0,&#92;&quot;End (s)&#92;&quot;:3.0,&#92;&quot;Duration (s)&#92;&quot;:3.0,&#92;&quot;Confidence&#92;&quot;:0.92,&#92;&quot;Corrected&#92;&quot;:&#92;&quot;&#92;&quot;},{&#92;&quot;ID&#92;&quot;:&#92;&quot;segment_1&#92;&quot;,&#92;&quot;Label&#92;&quot;:&#92;&quot;Segment 1&#92;&quot;,&#92;&quot;Start (s)&#92;&quot;:3.0,&#92;&quot;End (s)&#92;&quot;:8.5,&#92;&quot;Duration (s)&#92;&quot;:5.5,&#92;&quot;Confidence&#92;&quot;:0.78,&#92;&quot;Corrected&#92;&quot;:&#92;&quot;&#92;&quot;},{&#92;&quot;ID&#92;&quot;:&#92;&quot;segment_2&#92;&quot;,&#92;&quot;Label&#92;&quot;:&#92;&quot;Segment 2&#92;&quot;,&#92;&quot;Start (s)&#92;&quot;:8.5,&#92;&quot;End (s)&#92;&quot;:15.0,&#92;&quot;Duration (s)&#92;&quot;:6.5,&#92;&quot;Confidence&#92;&quot;:0.95,&#92;&quot;Corrected&#92;&quot;:&#92;&quot;Yes&#92;&quot;},{&#92;&quot;ID&#92;&quot;:&#92;&quot;outro&#92;&quot;,&#92;&quot;Label&#92;&quot;:&#92;&quot;Conclusion&#92;&quot;,&#92;&quot;Start (s)&#92;&quot;:15.0,&#92;&quot;End (s)&#92;&quot;:20.0,&#92;&quot;Duration (s)&#92;&quot;:5.0,&#92;&quot;Confidence&#92;&quot;:0.88,&#92;&quot;Corrected&#92;&quot;:&#92;&quot;&#92;&quot;}]&quot;' data-total-rows='4' data-total-columns='7' data-max-columns='50' data-banner-text='&quot;&quot;' data-pagination='false' data-page-size='10' data-selection='&quot;single&quot;' data-show-filters='false' data-show-download='false' data-show-column-summaries='false' data-show-data-types='true' data-show-page-size-selector='false' data-show-column-explorer='true' data-show-chart-builder='true' data-row-headers='[]' data-has-stable-row-id='false' data-lazy='false' data-preload='false' data-download-file-name='&quot;table_data&quot;'></marimo-table></marimo-ui-element>"
           }
         }
       ],
@@ -176,12 +163,12 @@
     },
     {
       "id": "emfo",
-      "code_hash": "bd603280bded480991bfc84416628cdb",
+      "code_hash": "1281db3c72908ecbc1daa529a10d7239",
       "outputs": [
         {
           "type": "data",
           "data": {
-            "text/html": "<marimo-ui-element object-id='emfo-0' random-id='d2c7c108-70ac-9823-25d1-539095df0c30'><marimo-table data-initial-value='[]' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Audio Regions&lt;/span&gt;&lt;/span&gt;&quot;' data-data='&quot;[{&#92;&quot;ID&#92;&quot;:&#92;&quot;intro&#92;&quot;,&#92;&quot;Label&#92;&quot;:&#92;&quot;Introduction&#92;&quot;,&#92;&quot;Start (s)&#92;&quot;:30.576,&#92;&quot;End (s)&#92;&quot;:33.576,&#92;&quot;Duration (s)&#92;&quot;:3.0},{&#92;&quot;ID&#92;&quot;:&#92;&quot;segment_1&#92;&quot;,&#92;&quot;Label&#92;&quot;:&#92;&quot;Segment 1&#92;&quot;,&#92;&quot;Start (s)&#92;&quot;:3,&#92;&quot;End (s)&#92;&quot;:11.722,&#92;&quot;Duration (s)&#92;&quot;:8.722},{&#92;&quot;ID&#92;&quot;:&#92;&quot;segment_2&#92;&quot;,&#92;&quot;Label&#92;&quot;:&#92;&quot;Segment 2&#92;&quot;,&#92;&quot;Start (s)&#92;&quot;:12.34,&#92;&quot;End (s)&#92;&quot;:20.955,&#92;&quot;Duration (s)&#92;&quot;:8.615},{&#92;&quot;ID&#92;&quot;:&#92;&quot;outro&#92;&quot;,&#92;&quot;Label&#92;&quot;:&#92;&quot;Conclusion&#92;&quot;,&#92;&quot;Start (s)&#92;&quot;:23.417,&#92;&quot;End (s)&#92;&quot;:28.417,&#92;&quot;Duration (s)&#92;&quot;:5.0}]&quot;' data-total-rows='4' data-total-columns='5' data-max-columns='50' data-banner-text='&quot;&quot;' data-pagination='false' data-page-size='10' data-selection='&quot;single&quot;' data-show-filters='false' data-show-download='false' data-show-column-summaries='false' data-show-data-types='true' data-show-page-size-selector='false' data-show-column-explorer='true' data-show-chart-builder='true' data-row-headers='[]' data-has-stable-row-id='false' data-lazy='false' data-preload='false' data-download-file-name='&quot;table_data&quot;'></marimo-table></marimo-ui-element>"
+            "text/plain": ""
           }
         }
       ],
@@ -189,12 +176,12 @@
     },
     {
       "id": "Hstk",
-      "code_hash": "9ecc97f5c79263de864f83b15cee4c77",
+      "code_hash": "7f0d34bf6fac659f24553a6387122631",
       "outputs": [
         {
           "type": "data",
           "data": {
-            "text/plain": ""
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"widget-state\">Widget State</h3>\n<table>\n<thead>\n<tr>\n<th>Property</th>\n<th>Value</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>Playback</td>\n<td>Paused</td>\n</tr>\n<tr>\n<td>Time</td>\n<td>0.000s / 3.196s</td>\n</tr>\n<tr>\n<td>Selected</td>\n<td>(none)</td>\n</tr>\n<tr>\n<td>Zoom</td>\n<td>50 px/sec</td>\n</tr>\n<tr>\n<td>Regions</td>\n<td>4</td>\n</tr>\n</tbody>\n</table></span>"
           }
         }
       ],
@@ -202,39 +189,26 @@
     },
     {
       "id": "nWHF",
-      "code_hash": "4cc4cf9146b0a1e91559eac484fda843",
+      "code_hash": "cbae71596c08e49ddd4462a2c55a0d33",
       "outputs": [
         {
-          "type": "data",
-          "data": {
-            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"widget-state\">\ud83d\udcca Widget State</h3>\n<ul>\n<li><strong>Playback</strong>: \u23f8\ufe0f Paused</li>\n<li><strong>Current Time</strong>: 3.307s / 77.230s</li>\n<li><strong>Selected Region</strong>: intro</li>\n<li><strong>Total Regions</strong>: 4</li>\n</ul></span>"
-          }
+          "type": "error",
+          "ename": "multiple-defs",
+          "evalue": "The variable 'json' was defined by another cell",
+          "traceback": []
         }
       ],
       "console": []
     },
     {
-      "id": "ZHCJ",
-      "code_hash": "dd9f07e390af2ea8a8adb6e6cd663010",
+      "id": "iLit",
+      "code_hash": "237bb33d322a1c8dd31a7e1f22e5832a",
       "outputs": [
         {
-          "type": "data",
-          "data": {
-            "text/plain": ""
-          }
-        }
-      ],
-      "console": []
-    },
-    {
-      "id": "ROlb",
-      "code_hash": "39b1a6c26fa33f9d5175253a7ea84289",
-      "outputs": [
-        {
-          "type": "data",
-          "data": {
-            "text/html": "<marimo-ui-element object-id='ZHCJ-0' random-id='332f3657-0983-99ef-8586-3b129f2a63bc'><marimo-button data-initial-value='0' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;\ud83d\udce5 Export Regions as JSON&lt;/span&gt;&lt;/span&gt;&quot;' data-kind='&quot;neutral&quot;' data-disabled='false' data-full-width='false'></marimo-button></marimo-ui-element>"
-          }
+          "type": "error",
+          "ename": "multiple-defs",
+          "evalue": "The variable 'json' was defined by another cell",
+          "traceback": []
         }
       ],
       "console": []

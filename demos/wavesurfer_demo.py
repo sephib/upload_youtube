@@ -296,6 +296,7 @@ def widget_state_display(mo, widget_ui):
         | Selected | {selected_id or '(none)'} |
         | Zoom | {zoom} px/sec |
         | Regions | {len(state.get('regions', []))} |
+        | Speed | {state.get('playback_speed', 1.0):.2f}x |
         """
     )
     return
@@ -304,8 +305,6 @@ def widget_state_display(mo, widget_ui):
 @app.cell
 def export_section(mo, widget_ui):
     """Export regions as JSON."""
-    import json
-
     mo.md("## Step 4: Export Annotations")
 
     if not hasattr(widget_ui, "value"):

@@ -166,6 +166,38 @@ def status():
 
 
 @cli.command()
+@click.option("--track", is_flag=True, default=False, help="Log results to MLflow")
+def evaluate(track: bool):
+    """Evaluate alignment accuracy using manually corrected ground truth.
+
+    Compares predicted timestamps against manual corrections stored in DuckDB
+    to measure alignment quality (MAE, bias, tolerance percentages).
+
+    Example:
+        torah-sync evaluate
+        torah-sync evaluate --track
+    """
+    # Edited by Claude Opus 4.6
+    from src.services.alignment.evaluator import evaluate_alignment, format_metrics_report
+
+    metrics = evaluate_alignment()
+    report = format_metrics_report(metrics)
+    click.echo(report)
+
+    if track:
+        from src.services.alignment.tracker import is_tracking_available, log_experiment_run
+
+        if not is_tracking_available():
+            click.echo("MLflow not installed. Install with: uv pip install torah-sync[tracking]")
+            return
+
+        run_id = log_experiment_run(metrics=metrics, report=report)
+        if run_id:
+            click.echo(f"Logged to MLflow ({run_id=})")
+            click.echo("  View: mlflow ui --backend-store-uri mlruns")
+
+
+@cli.command()
 @click.argument("audio_file", type=click.Path(exists=True, path_type=Path))
 @click.option("--output", "-o", type=click.Path(path_type=Path), help="Output directory")
 def process(audio_file: Path, output: Path | None):

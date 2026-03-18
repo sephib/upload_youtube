@@ -173,6 +173,125 @@ print(f'E5/A4: {freqs[2]/freqs[0]:.4f}')
 
 ---
 
+## Enhancement #3: Playback Speed Control ⏩
+
+### What Changed
+Added a playback speed dropdown with 7 speed options for variable-speed audio playback.
+
+### Technical Details
+
+**Feature**:
+- Dropdown control in widget controls bar
+- Speed options: 0.5x, 0.75x, 1.0x (default), 1.25x, 1.5x, 1.75x, 2.0x
+- Bidirectional sync between Python and JavaScript
+- Speed persists across play/pause cycles
+
+**Implementation**:
+- **Traitlet**: `playback_speed` (Float, default=1.0, bidirectional sync)
+- **JavaScript UI**: HTML `<select>` dropdown in controls bar
+- **WaveSurfer API**: `ws.setPlaybackRate(speed)` for speed control
+- **Event handling**: Dropdown change → update Python traitlet
+- **Model listener**: Python changes → update dropdown and playback rate
+
+### Benefits
+✅ **Accessibility**: Users can slow down or speed up playback as needed
+✅ **Transcription**: Slower speeds help with unclear speech or complex audio
+✅ **Torah alignment**: Slow down Hebrew readings for precise verse boundary detection
+✅ **Efficiency**: Speed up playback for quick review
+✅ **Standard feature**: Matches expectations from modern media players
+
+### Code Locations
+
+**Widget** (`src/widgets/wavesurfer_widget.py`):
+- Traitlet: Line 77
+- Dropdown UI: Lines 125-141
+- Event handler: Lines 289-294
+- Model listener: Lines 338-342
+- Initialization: Lines 229-234
+
+**Gallery Demo** (`demos/wavesurfer_gallery.py`):
+- Traitlet: Line 117
+- Dropdown UI: Lines 145-161
+- Event handler: Lines 250-255
+- Model listener: Lines 315-319
+- Initialization: Lines 211-216
+- State display: Line 485
+
+**Full Demo** (`demos/wavesurfer_demo.py`):
+- State display: Line 298
+
+**Tests** (`demos/test_widget.py`):
+- `test_playback_speed()`: Lines 103-120
+
+### Usage Examples
+
+**From JavaScript (in widget)**:
+```javascript
+// User selects 1.5x from dropdown
+speedSelect.value = 1.5;
+// Triggers event → ws.setPlaybackRate(1.5)
+```
+
+**From Python**:
+```python
+# Set speed programmatically
+widget.playback_speed = 0.75  # Slow down to 75%
+
+# Read current speed
+current_speed = widget.playback_speed  # Returns 0.75
+```
+
+**Speed Range**: 0.5x (half speed) to 2.0x (double speed)
+
+### Statistics
+
+| Metric | Before | After | Change |
+|--------|--------|-------|--------|
+| **Traitlets** | 9 | 10 | +1 |
+| **Controls** | 3-4 | 4-5 | +1 (speed dropdown) |
+| **Speed Options** | 1 (fixed) | 7 | +6 |
+| **Code (widget)** | ~350 lines | ~365 lines | +15 |
+| **Code (gallery)** | 589 lines | 606 lines | +17 |
+
+### Testing
+
+**Automated Test** (`test_playback_speed`):
+```bash
+python demos/test_widget.py
+```
+Tests:
+- Default speed is 1.0x
+- Speed can be set to 1.5x
+- All 7 speed options work correctly
+
+**Manual Testing Checklist**:
+- [ ] Dropdown appears with 7 options
+- [ ] Default is 1.0x
+- [ ] Changing speed updates audio playback
+- [ ] Speed works during playback
+- [ ] Speed works while paused
+- [ ] Python can set speed: `widget.playback_speed = 1.5`
+- [ ] State display shows current speed
+- [ ] Speed persists across play/pause
+
+### Browser Compatibility
+
+Uses standard HTML5 Audio API `setPlaybackRate()`:
+- ✅ Chrome 20+
+- ✅ Firefox 20+
+- ✅ Safari 6+
+- ✅ Edge (Chromium)
+
+### Future Enhancements
+
+Potential additions:
+- Keyboard shortcuts (e.g., `[` = slower, `]` = faster)
+- Custom speed input field for precise control
+- Speed presets for specific use cases
+- Visual indication of current speed on waveform
+
+---
+
 ## User Impact
 
 ### For Gallery Visitors

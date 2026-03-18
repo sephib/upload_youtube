@@ -17,6 +17,7 @@ Features:
 - Interactive waveform with draggable regions
 - Two-way sync between table and waveform
 - Play/pause controls with timeline
+- Adjustable playback speed (0.5x - 2.0x)
 - JSON export functionality
 - Multi-pitch synthetic audio (3 musical notes)
 - Optional file upload for custom audio
@@ -24,7 +25,7 @@ Features:
 
 import marimo
 
-__generated_with = "0.20.4"
+__generated_with = "0.21.0"
 app = marimo.App(width="full")
 
 
@@ -50,7 +51,7 @@ def title(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def audio_upload_option(mo):
     """Optional file upload for custom audio."""
     mo.md("""
@@ -69,7 +70,7 @@ def audio_upload_option(mo):
     return (file_picker,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def wavesurfer_widget_code(anywidget, traitlets):
     """WaveSurfer anywidget implementation.
 
@@ -112,6 +113,9 @@ def wavesurfer_widget_code(anywidget, traitlets):
         progress_color = traitlets.Unicode(default_value="#383351").tag(sync=True)
         height = traitlets.Int(default_value=128).tag(sync=True)
 
+        # Playback speed (Python ↔ JavaScript)
+        playback_speed = traitlets.Float(default_value=1.0).tag(sync=True)
+
         _esm = """
         import WaveSurfer from 'https://cdn.jsdelivr.net/npm/wavesurfer.js@7/dist/wavesurfer.esm.js';
         import RegionsPlugin from 'https://cdn.jsdelivr.net/npm/wavesurfer.js@7/dist/plugins/regions.esm.js';
@@ -137,6 +141,21 @@ def wavesurfer_widget_code(anywidget, traitlets):
           playPauseBtn.style.cursor = 'pointer';
           playPauseBtn.style.fontSize = '14px';
 
+          const speedLabel = document.createElement('span');
+          speedLabel.textContent = 'Speed: ';
+          speedLabel.style.cssText = 'font-size:14px;margin-left:8px;';
+
+          const speedSelect = document.createElement('select');
+          speedSelect.style.cssText = 'padding:4px 8px;cursor:pointer;font-size:14px;border:1px solid #ccc;border-radius:4px;background:#fff;';
+          const speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
+          speeds.forEach(speed => {
+            const option = document.createElement('option');
+            option.value = speed;
+            option.textContent = `${speed}x`;
+            if (speed === 1.0) option.selected = true;
+            speedSelect.appendChild(option);
+          });
+
           const timeDisplay = document.createElement('span');
           timeDisplay.style.fontFamily = 'monospace';
           timeDisplay.style.fontSize = '14px';
@@ -151,6 +170,8 @@ def wavesurfer_widget_code(anywidget, traitlets):
           regionInfo.textContent = 'Click a region to select it';
 
           controls.appendChild(playPauseBtn);
+          controls.appendChild(speedLabel);
+          controls.appendChild(speedSelect);
           controls.appendChild(timeDisplay);
           container.appendChild(waveformDiv);
           container.appendChild(controls);
@@ -187,6 +208,13 @@ def wavesurfer_widget_code(anywidget, traitlets):
             model.save_changes();
             timeDisplay.textContent = `0.000 / ${dur.toFixed(3)}`;
 
+            // Set initial playback speed
+            const initialSpeed = model.get('playback_speed');
+            if (initialSpeed && initialSpeed !== 1.0) {
+              wavesurfer.setPlaybackRate(initialSpeed);
+              speedSelect.value = initialSpeed;
+            }
+
             const regions = model.get('regions') || [];
             regions.forEach((region) => {
               regionsPlugin.addRegion({
@@ -221,6 +249,13 @@ def wavesurfer_widget_code(anywidget, traitlets):
 
           playPauseBtn.addEventListener('click', () => {
             wavesurfer.playPause();
+          });
+
+          speedSelect.addEventListener('change', () => {
+            const speed = parseFloat(speedSelect.value);
+            wavesurfer.setPlaybackRate(speed);
+            model.set('playback_speed', speed);
+            model.save_changes();
           });
 
           regionsPlugin.on('region-updated', (region) => {
@@ -280,6 +315,12 @@ def wavesurfer_widget_code(anywidget, traitlets):
             wavesurfer.setTime(model.get('current_time'));
           });
 
+          model.on('change:playback_speed', () => {
+            const speed = model.get('playback_speed');
+            wavesurfer.setPlaybackRate(speed);
+            speedSelect.value = speed;
+          });
+
           return () => wavesurfer.destroy();
         }
 
@@ -295,7 +336,7 @@ def wavesurfer_widget_code(anywidget, traitlets):
     return (WavesurferWidget,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def generate_sample_audio():
     """Generate 5-second synthetic audio with 3 different pitches.
 
@@ -373,12 +414,11 @@ def generate_sample_audio():
     wav_buffer.write(audio_int16.tobytes())
 
     audio_bytes = wav_buffer.getvalue()
-
     return (audio_bytes,)
 
 
-@app.cell
-def load_audio_source(file_picker, audio_bytes, mo):
+@app.cell(hide_code=True)
+def load_audio_source(audio_bytes, file_picker, mo):
     """Load audio from upload or use generated sample."""
     if file_picker.value is not None and len(file_picker.value) > 0:
         # Use uploaded file
@@ -400,7 +440,7 @@ def load_audio_source(file_picker, audio_bytes, mo):
     return (final_audio,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def define_regions():
     """Define sample audio regions."""
     regions = [
@@ -429,7 +469,7 @@ def define_regions():
     return (regions,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def create_widget(WavesurferWidget, final_audio, regions):
     """Create the wavesurfer widget."""
     widget = WavesurferWidget(
@@ -442,14 +482,14 @@ def create_widget(WavesurferWidget, final_audio, regions):
     return (widget,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def display_widget(mo, widget):
     """Create widget UI wrapper."""
     widget_ui = mo.ui.anywidget(widget)
     return (widget_ui,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def show_widget_with_state(mo, widget_ui):
     """Display widget alongside live state."""
     state = widget_ui.value
@@ -460,6 +500,7 @@ def show_widget_with_state(mo, widget_ui):
     - Status: {'▶️ Playing' if state.get('is_playing', False) else '⏸️ Paused'}
     - Selected: `{state.get('selected_region_id', '') or '(none)'}`
     - Regions: `{len(state.get('regions', []))}`
+    - Speed: `{state.get('playback_speed', 1.0):.2f}x`
     """)
 
     mo.hstack([widget_ui, state_display], widths=[3, 1])
@@ -476,7 +517,7 @@ def table_intro(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def regions_table(mo, widget_ui):
     """Display and interact with regions via table."""
     _regions = widget_ui.value.get("regions", [])
@@ -497,7 +538,7 @@ def regions_table(mo, widget_ui):
     return (table,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def sync_table_to_widget(mo, table, widget):
     """Seek to selected table row."""
     if not table.value:
@@ -518,11 +559,15 @@ def sync_table_to_widget(mo, table, widget):
 
 @app.cell(hide_code=True)
 def export_intro(mo):
-    mo.md("## Export\n\nSave your annotated regions as JSON:")
+    mo.md("""
+    ## Export
+
+    Save your annotated regions as JSON:
+    """)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def export_button(mo):
     """Create export button."""
     export_btn = mo.ui.run_button(label="📥 Export Regions")
@@ -530,8 +575,8 @@ def export_button(mo):
     return (export_btn,)
 
 
-@app.cell
-def export_handler(mo, export_btn, widget_ui):
+@app.cell(hide_code=True)
+def export_handler(export_btn, mo, widget_ui):
     """Handle export button click."""
     import json
 
