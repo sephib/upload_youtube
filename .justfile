@@ -267,4 +267,4 @@ run-app:
 kill-db:
     kill -9 $(lsof -t data/torah_sync.duckdb)
 
-render-video {aliya_id}:
+# render-video {aliya_id}:

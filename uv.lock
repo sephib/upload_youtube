@@ -4004,6 +4004,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "aeneas" },
+    { name = "anywidget" },
     { name = "audioop-lts" },
     { name = "click" },
     { name = "duckdb" },
@@ -4013,6 +4014,7 @@ dependencies = [
     { name = "google-auth-oauthlib" },
     { name = "httpx" },
     { name = "loguru" },
+    { name = "marimo" },
     { name = "moviepy" },
     { name = "numpy" },
     { name = "pillow" },
@@ -4052,6 +4054,7 @@ tracking = [
 [package.metadata]
 requires-dist = [
     { name = "aeneas", directory = "vendor/aeneas" },
+    { name = "anywidget", specifier = ">=0.9.21" },
     { name = "anywidget", marker = "extra == 'app'", specifier = ">=0.9" },
     { name = "audioop-lts", specifier = ">=0.2.2" },
     { name = "click", specifier = ">=8.1.7" },
@@ -4062,6 +4065,7 @@ requires-dist = [
     { name = "google-auth-oauthlib", specifier = ">=1.2.0" },
     { name = "httpx", specifier = ">=0.27.0" },
     { name = "loguru", specifier = ">=0.7.2" },
+    { name = "marimo", specifier = ">=0.20.4" },
     { name = "marimo", marker = "extra == 'app'", specifier = ">=0.10" },
     { name = "mlflow", marker = "extra == 'tracking'", specifier = ">=2.10.0" },
     { name = "moviepy", specifier = ">=1.0.3" },

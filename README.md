@@ -57,6 +57,46 @@ uv run torah-sync correct 1  # Opens marimo app
 uv run torah-sync render 1
 ```
 
+## Manual Alignment Correction
+
+After running the alignment phase, you may want to manually correct timing issues using the interactive marimo app.
+
+### Launch the Alignment Editor
+
+```bash
+# Via CLI wrapper (recommended)
+uv run torah-sync correct 1
+
+# Or directly with marimo
+uv run marimo edit src/apps/alignment_editor.py --watch
+```
+
+The `--watch` flag auto-reloads the app when code changes.
+
+### Using the Editor
+
+The marimo app provides:
+
+- **WaveSurfer.js integration**: Visual waveform with playback controls
+- **Verse-by-verse editing**: Adjust start/end times for each pasuk
+- **Real-time preview**: Hear changes immediately
+- **CSV export/import**: Bulk editing via spreadsheet
+- **Quality metrics**: Alignment confidence scores
+
+**Workflow**:
+1. Select the alya from the dropdown
+2. Play the audio and identify mistimed verses
+3. Adjust timestamps using the interactive controls
+4. Save changes to the database
+5. Proceed to Phase 3 (rendering)
+
+**Export for bulk editing**:
+```bash
+# From the marimo app, use the CSV export button
+# Edit in spreadsheet software
+# Import back via the CSV import button
+```
+
 ## Video Rendering
 
 ### Check Alignment Status
@@ -101,7 +141,19 @@ uv run torah-sync render 1 --output ./my-videos/
 
 To render all alyot for a parasha:
 
-**Method 1: Manual Sequential Rendering**
+**Method 1: CLI Command (Recommended)**
+
+```bash
+# Render all alyot for Ha'azinu parasha
+uv run torah-sync render-playlist האזינו
+
+# With custom output directory
+uv run torah-sync render-playlist האזינו --output ./my-videos/
+```
+
+This automatically finds the playlist, renders all alyot sequentially, and provides a summary report.
+
+**Method 2: Manual Sequential Rendering**
 
 ```bash
 # Get the list of alya IDs
@@ -114,7 +166,7 @@ uv run torah-sync render 3
 # ... continue for all alyot
 ```
 
-**Method 2: Bash Loop (Sequential IDs)**
+**Method 3: Bash Loop (Sequential IDs)**
 
 If your alyot have sequential IDs (e.g., 1-7 for Ha'azinu):
 
@@ -126,7 +178,7 @@ for alya_id in {1..7}; do
 done
 ```
 
-**Method 3: Extract IDs from Status**
+**Method 4: Extract IDs from Status**
 
 For non-sequential IDs, extract them from status output:
 
@@ -137,31 +189,6 @@ uv run torah-sync status | \
   grep -oE "id=[0-9]+" | \
   cut -d= -f2 | \
   xargs -I {} sh -c 'echo "Rendering alya {}..." && uv run torah-sync render {}'
-```
-
-**Method 4: Python Script**
-
-For more control, create a Python script:
-
-```python
-from src.repositories.playlist_repo import PlaylistRepository
-from src.repositories.alya_repo import AlyaRepository
-from src.services.render_pipeline import RenderPipeline
-
-# Get all alyot for Ha'azinu
-playlist_repo = PlaylistRepository()
-alya_repo = AlyaRepository()
-
-playlists = playlist_repo.list_all()
-haazinu = next(p for p in playlists if "האזינו" in p.name)
-alyot = alya_repo.list_by_playlist(haazinu.id)
-
-# Render each alya
-pipeline = RenderPipeline()
-for alya in alyot:
-    print(f"Rendering {alya.name}...")
-    video = pipeline.render(alya.id)
-    print(f"✓ Created: {video.file_path}")
 ```
 
 ### Troubleshooting

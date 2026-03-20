@@ -173,7 +173,7 @@ def parse_haftara_refs(parasha_he: str) -> list[dict] | None:
     return [parse_ref(r) for r in refs]
 
 
-def populate(*, dry_run: bool = False) -> None:
+def populate(*, dry_run: bool = False, overwrite: bool = False) -> None:
     """Fetch all parashot from Sefaria and populate DuckDB."""
     playlist_repo = PlaylistRepository()
     alya_repo = AlyaRepository()
@@ -214,8 +214,8 @@ def populate(*, dry_run: bool = False) -> None:
         # Upsert playlist
         existing_playlist = playlist_repo.get_by_name(he_title)
         if existing_playlist:
-            # Update with real data if it had placeholders
-            if existing_playlist.book == "Unknown" or existing_playlist.chapter_start == 1:
+            # Update with real data if it had placeholders or overwrite requested
+            if overwrite or existing_playlist.book == "Unknown" or existing_playlist.chapter_start == 1:
                 existing_playlist.book = whole["book"]
                 existing_playlist.chapter_start = whole["chapter_start"]
                 existing_playlist.verse_start = whole["verse_start"]
@@ -255,8 +255,11 @@ def populate(*, dry_run: bool = False) -> None:
                 ))
                 stats["alyot_created"] += 1
 
-            # Insert alya_range if not exists
+            # Insert alya_range if not exists (or overwrite)
             existing_ranges = alya_range_repo.list_by_alya(alya.id)
+            if existing_ranges and overwrite:
+                alya_range_repo.delete_by_alya(alya.id)
+                existing_ranges = []
             if not existing_ranges:
                 alya_range_repo.insert(AlyaRange(
                     alya_id=alya.id,
@@ -290,7 +293,11 @@ def populate(*, dry_run: bool = False) -> None:
         else:
             # Maftir alya exists but might lack range
             maftir_alya = existing_alyot[8]
-            if not alya_range_repo.list_by_alya(maftir_alya.id):
+            existing_maftir_ranges = alya_range_repo.list_by_alya(maftir_alya.id)
+            if existing_maftir_ranges and overwrite:
+                alya_range_repo.delete_by_alya(maftir_alya.id)
+                existing_maftir_ranges = []
+            if not existing_maftir_ranges:
                 maftir_ref = derive_maftir_ref(refs[6])
                 if maftir_ref:
                     maftir_parsed = parse_ref(maftir_ref)
@@ -315,7 +322,11 @@ def populate(*, dry_run: bool = False) -> None:
             else:
                 haftara_alya = existing_alyot[9]
 
-            if not alya_range_repo.list_by_alya(haftara_alya.id):
+            existing_haftara_ranges = alya_range_repo.list_by_alya(haftara_alya.id)
+            if existing_haftara_ranges and overwrite:
+                alya_range_repo.delete_by_alya(haftara_alya.id)
+                existing_haftara_ranges = []
+            if not existing_haftara_ranges:
                 for range_idx, hp in enumerate(haftara_parsed_list, 1):
                     alya_range_repo.insert(AlyaRange(
                         alya_id=haftara_alya.id,
@@ -334,14 +345,18 @@ def populate(*, dry_run: bool = False) -> None:
 
 
 def main() -> int:
+    # Edited by Claude Opus 4.6 - added --overwrite flag
     dry_run = "--dry-run" in sys.argv
+    overwrite = "--overwrite" in sys.argv
     if dry_run:
         print("=== DRY RUN - no DB writes ===\n")
     else:
         print("=== Populating DuckDB with all Torah Parashot ===\n")
+    if overwrite:
+        print("  (overwrite mode: existing ranges will be replaced)\n")
 
     try:
-        populate(dry_run=dry_run)
+        populate(dry_run=dry_run, overwrite=overwrite)
         return 0
     except Exception as e:
         print(f"\nError: {e}", file=sys.stderr)

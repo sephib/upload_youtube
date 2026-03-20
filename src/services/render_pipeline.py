@@ -86,8 +86,14 @@ class RenderPipeline:
                 alya_id=alya_id,
             )
 
-            # Persist video metadata
-            self.alya_video_repo.insert(video)
+            # Edited by Claude Opus 4.6
+            # Persist video metadata (upsert: update if re-rendering)
+            existing_videos = self.alya_video_repo.list_by_alya(alya_id)
+            if existing_videos:
+                video.id = existing_videos[0].id
+                self.alya_video_repo.update(video)
+            else:
+                self.alya_video_repo.insert(video)
 
             logger.info(f"Render pipeline complete {output_path=}")
             return video
