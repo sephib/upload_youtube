@@ -20,6 +20,7 @@ class AlyaVideo(BaseModel):
         codec: Video codec
         duration_seconds: Total video duration
         youtube_video_id: YouTube video ID (set after upload)
+        thumbnail_path: Local thumbnail file path for YouTube upload
         created_at: Record creation timestamp
     """
 
@@ -33,6 +34,7 @@ class AlyaVideo(BaseModel):
     codec: str = Field(default="h264", description="Video codec")
     duration_seconds: float = Field(..., gt=0.0, description="Total video duration")
     youtube_video_id: str | None = Field(default=None, description="YouTube video ID")
+    thumbnail_path: str | None = Field(default=None, description="Local thumbnail file path for YouTube upload")
     created_at: datetime = Field(default_factory=datetime.now, description="Record creation timestamp")
 
     @field_validator("format")

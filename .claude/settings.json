@@ -1,9 +1,18 @@
 {
   "permissions": {
     "allow": [
+      "Bash",
+      "Read",
+      "Edit",
+      "Write",
+      "Glob",
+      "Grep",
+      "Agent",
+      "WebSearch",
+      "WebFetch",
+      "TodoWrite",
       "ExitPlanMode",
-      "AskUserQuestion",
-      "Write"
+      "AskUserQuestion"
     ]
   }
 }

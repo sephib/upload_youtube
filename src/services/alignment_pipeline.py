@@ -117,6 +117,91 @@ class AlignmentPipeline:
             logger.error(f"Alignment pipeline failed: {e}", exc_info=True)
             raise TorahSyncError(f"Alignment failed: {e}") from e
 
+    # Edited by Claude Opus 4.6 — align by alya_id for megillot support
+    def align_by_alya(self, alya_id: int) -> tuple[AlignmentRun, list[PasukAlignment]]:
+        """Run alignment on an already-ingested alya (playlist, audio, ranges in DB).
+
+        Args:
+            alya_id: ID of the alya to align.
+
+        Returns:
+            Tuple of (AlignmentRun, list of PasukAlignment) persisted to DuckDB.
+        """
+        alya = self.alya_repo.get_by_id(alya_id)
+        if alya is None:
+            raise TorahSyncError(f"Alya {alya_id=} not found")
+
+        playlist = self.playlist_repo.get_by_id(alya.playlist_id)
+        alya_audio = self.alya_audio_repo.get_by_alya(alya.id)
+        if alya_audio is None:
+            raise TorahSyncError(f"No audio found for {alya_id=}")
+
+        audio_file = Path(alya_audio.file_path)
+        if not audio_file.exists():
+            raise TorahSyncError(f"Audio file not found: {audio_file}")
+
+        logger.info(f"Aligning by alya {alya_id=}, {playlist.name=}, {alya.name=}")
+        self.alya_repo.update_state(alya.id, AlyaState.ALIGNING)
+
+        # Fetch Hebrew text using playlist name + alya name as keys
+        verses = self._fetch_verses(playlist.name, alya.name)
+
+        # Convert audio + run alignment
+        with AudioConverter() as converter:
+            audio_segment = AudioSegment.from_file(audio_file)
+            wav_path = converter.convert_to_alignment_format(audio_segment)
+            logger.info(f"Audio converted {wav_path=}")
+
+            alignment_run, pasuk_alignments = self.aligner.align(
+                wav_path, verses, alya_audio.id
+            )
+
+        # Persist to DuckDB
+        alignment_run = self.alignment_run_repo.insert(alignment_run)
+        for pa in pasuk_alignments:
+            pa.alignment_run_id = alignment_run.id
+        pasuk_alignments = self.pasuk_alignment_repo.insert_batch(pasuk_alignments)
+        self.alya_repo.update_state(alya.id, AlyaState.ALIGNED)
+
+        logger.info(
+            f"Alignment complete",
+            alignment_run_id=alignment_run.id,
+            verse_count=len(pasuk_alignments),
+            quality=alignment_run.alignment_quality,
+        )
+        return alignment_run, pasuk_alignments
+
+    # Edited by Claude Opus 4.6 — align entire playlist
+    def align_playlist(
+        self, playlist_name: str,
+    ) -> list[tuple[AlignmentRun, list[PasukAlignment]]]:
+        """Align all alyot of a playlist (parasha or megillah).
+
+        Args:
+            playlist_name: Hebrew name of the playlist (e.g., "שיר השירים").
+
+        Returns:
+            List of (AlignmentRun, list[PasukAlignment]) per alya.
+        """
+        playlist = self.playlist_repo.get_by_name(playlist_name)
+        if playlist is None:
+            raise TorahSyncError(f"Playlist '{playlist_name}' not found")
+
+        alyot = self.alya_repo.list_by_playlist(playlist.id)
+        if not alyot:
+            raise TorahSyncError(f"No alyot found for '{playlist_name}'")
+
+        results = []
+        for alya in alyot:
+            audio = self.alya_audio_repo.get_by_alya(alya.id)
+            if audio is None:
+                logger.warning(f"Skipping {alya.name}: no audio")
+                continue
+            result = self.align_by_alya(alya.id)
+            results.append(result)
+
+        return results
+
     def _ensure_playlist(self, parasha_name: str) -> Playlist:
         """Find or create a playlist for this parasha."""
         existing = self.playlist_repo.get_by_name(parasha_name)

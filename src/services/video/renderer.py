@@ -71,6 +71,7 @@ class VideoRenderer:
         verses: list[tuple[str, str]] | None = None,
         pasuk_alignments: list[PasukAlignment] | None = None,
         alya_id: int | None = None,
+        thumbnail_path: Path | None = None,
     ) -> AlyaVideo:
         """Render synchronized video with text overlay.
 
@@ -81,6 +82,7 @@ class VideoRenderer:
             verses: Optional list of (reference, hebrew_text) tuples
             pasuk_alignments: Per-verse alignment data
             alya_id: FK to alyot.id (passed from pipeline)
+            thumbnail_path: Optional thumbnail to embed as video poster/cover art
 
         Returns:
             AlyaVideo model
@@ -136,6 +138,11 @@ class VideoRenderer:
             # Validate output
             if not output_path.exists():
                 raise VideoRenderError(f"Video file was not created: {output_path}")
+
+            # Edited by Claude Sonnet 4.5
+            # Embed thumbnail as video poster/cover art if provided
+            if thumbnail_path and thumbnail_path.exists():
+                self._embed_thumbnail(output_path, thumbnail_path)
 
             logger.info(
                 f"Video rendered successfully",
@@ -435,3 +442,64 @@ class VideoRenderer:
         clip = ImageClip(temp_path).with_duration(duration)
         logger.debug(f"Created ImageClip from {temp_path}")
         return clip
+
+    def _embed_thumbnail(self, video_path: Path, thumbnail_path: Path) -> None:
+        """Embed thumbnail as video poster/cover art using ffmpeg.
+
+        Adds the thumbnail as an "attached picture" stream which displays
+        as the video poster in media players and file browsers.
+
+        Args:
+            video_path: Path to the video file (will be modified in-place)
+            thumbnail_path: Path to the thumbnail image (JPG/PNG)
+
+        Raises:
+            VideoRenderError: If ffmpeg embedding fails
+        """
+        import subprocess
+
+        temp_output = video_path.with_stem(f"{video_path.stem}_with_thumb")
+
+        try:
+            logger.info(f"Embedding thumbnail into video {thumbnail_path.name=}")
+
+            # ffmpeg command to embed thumbnail as attached picture
+            # Map streams: 0:v (video), 0:a (audio), 1:v (thumbnail)
+            cmd = [
+                "ffmpeg",
+                "-i", str(video_path),           # Input video (with audio)
+                "-i", str(thumbnail_path),       # Input thumbnail
+                "-map", "0:v",                   # Map video stream from first input
+                "-map", "0:a",                   # Map audio stream from first input
+                "-map", "1:v",                   # Map thumbnail as second video stream
+                "-c:v:0", "copy",                # Copy video codec (no re-encode)
+                "-c:a", "copy",                  # Copy audio codec (no re-encode)
+                "-c:v:1", "mjpeg",               # Encode thumbnail as MJPEG
+                "-disposition:v:1", "attached_pic",  # Mark second video stream as poster
+                "-y",                            # Overwrite output
+                str(temp_output)                 # Output file
+            ]
+
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                check=True
+            )
+
+            # Replace original with thumbnail-embedded version
+            temp_output.replace(video_path)
+
+            logger.info(f"Thumbnail embedded successfully into {video_path.name}")
+
+        except subprocess.CalledProcessError as e:
+            logger.error(f"ffmpeg thumbnail embedding failed: {e.stderr}")
+            # Clean up temp file if it exists
+            if temp_output.exists():
+                temp_output.unlink()
+            raise VideoRenderError(f"Failed to embed thumbnail: {e.stderr}") from e
+        except Exception as e:
+            logger.error(f"Thumbnail embedding failed: {e}")
+            if temp_output.exists():
+                temp_output.unlink()
+            raise VideoRenderError(f"Failed to embed thumbnail: {e}") from e

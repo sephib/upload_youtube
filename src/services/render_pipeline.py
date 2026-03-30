@@ -13,6 +13,7 @@ from src.repositories.alya_repo import AlyaRepository
 from src.repositories.alya_video_repo import AlyaVideoRepository
 from src.repositories.pasuk_alignment_repo import PasukAlignmentRepository
 from src.repositories.playlist_repo import PlaylistRepository
+from src.services.local_thumbnail_service import LocalThumbnailService
 from src.services.video.renderer import VideoRenderer
 
 logger = get_logger(__name__)
@@ -32,6 +33,7 @@ class RenderPipeline:
         self.pasuk_alignment_repo = PasukAlignmentRepository()
         self.alya_video_repo = AlyaVideoRepository()
         self.video_renderer = VideoRenderer()
+        self.thumbnail_service = LocalThumbnailService()
 
         logger.debug("Initialized RenderPipeline")
 
@@ -73,6 +75,10 @@ class RenderPipeline:
             parasha_name = playlist.name if playlist else "unknown"
             output_path = output_dir / f"{parasha_name}_{alya.name}_sync.mp4"
 
+            # Edited by Claude Sonnet 4.5
+            # Find thumbnail for megillot (before rendering)
+            thumbnail_path = self.thumbnail_service.find_thumbnail(playlist, alya)
+
             # Render
             audio_file = Path(alya_audio.file_path)
             verses = [(pa.reference, pa.hebrew_text) for pa in pasuk_alignments]
@@ -84,7 +90,13 @@ class RenderPipeline:
                 verses=verses,
                 pasuk_alignments=pasuk_alignments,
                 alya_id=alya_id,
+                thumbnail_path=thumbnail_path,  # Pass thumbnail to renderer for embedding
             )
+
+            # Store thumbnail path in database for YouTube upload
+            if thumbnail_path:
+                video.thumbnail_path = str(thumbnail_path)
+                logger.info(f"Associated thumbnail: {thumbnail_path.name}")
 
             # Edited by Claude Opus 4.6
             # Persist video metadata (upsert: update if re-rendering)

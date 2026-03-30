@@ -60,6 +60,37 @@ def test_get_latest_by_audio(run_repo, seed_data):
     assert latest.id == run2.id
 
 
+def test_get_latest_prioritizes_manually_corrected(run_repo, seed_data):
+    """Manually corrected runs should be preferred over newer automatic runs."""
+    _, _, aa = seed_data
+
+    # Create older automatic run
+    run1 = run_repo.insert(AlignmentRun(
+        alya_audio_id=aa.id,
+        alignment_quality=0.85,
+        verse_count=6,
+        manually_corrected=False
+    ))
+
+    # Mark it as manually corrected
+    run1.manually_corrected = True
+    run_repo.update(run1)
+
+    # Create newer automatic run (this would normally override the old one)
+    run2 = run_repo.insert(AlignmentRun(
+        alya_audio_id=aa.id,
+        alignment_quality=0.92,
+        verse_count=6,
+        manually_corrected=False
+    ))
+
+    # get_latest_by_audio should return the manually corrected run, not the newer one
+    latest = run_repo.get_latest_by_audio(aa.id)
+    assert latest is not None
+    assert latest.id == run1.id, "Should return manually corrected run, not the newer automatic run"
+    assert latest.manually_corrected is True
+
+
 def test_insert_pasuk_alignment(pa_repo, run_repo, seed_data):
     """Insert a pasuk alignment and retrieve by alignment_run."""
     _, _, aa = seed_data

@@ -6,7 +6,7 @@
 
 ## Overview
 
-Torah Sync generates synchronized videos from Torah reading audio files, where Hebrew text with vowels and cantillation marks highlights in real-time as each verse is recited.
+Torah Sync generates synchronized videos from Torah reading audio files, where Hebrew text with vowels and cantillation marks highlights in real-time as each verse is recited. Supports both weekly Torah portions (Parashot) and Megillot (שיר השירים, רות, איכה, קהלת, אסתר).
 
 ## Quick Start
 
@@ -47,14 +47,49 @@ uv run torah-sync process "data/audio/פרשת האזינו - ראשון - נו�
 For better control and manual correction capability:
 
 ```bash
-# Phase 1: Align audio with Hebrew text
+# Phase 1a: Align a Torah audio file (parses filename)
 uv run torah-sync align "data/audio/פרשת האזינו - ראשון - נוסח אשכנז.mp4"
+
+# Phase 1b: Align an entire playlist (parasha or megillah)
+uv run torah-sync align-playlist "שיר השירים"
+uv run torah-sync align-playlist "האזינו"
+
+# Phase 1c: Align a single pre-ingested alya by DB id
+uv run torah-sync align-alya 487
 
 # Phase 2: (Optional) Manual correction
 uv run torah-sync correct 1  # Opens marimo app
 
 # Phase 3: Render video
 uv run torah-sync render 1
+
+# Phase 3b: Render all alyot/chapters of a playlist
+uv run torah-sync render-playlist "שיר השירים"
+```
+
+#### Megillot Workflow
+
+For megillot (scrolls), audio files are ingested separately:
+
+```bash
+# Step 1: Rename MP3 files to match JPG thumbnails
+uv run python scripts/rename_megillot_audio.py "data/torah_read/מגילות/שיר השירים" --apply
+
+# Or rename all megillot at once
+uv run python scripts/rename_megillot_audio.py "data/torah_read/מגילות" --all --apply
+
+# Step 2: Ingest into DuckDB (creates playlist, alyot, audio records)
+uv run python scripts/ingest_megillah.py "שיר השירים" "Song of Songs" \
+    "data/torah_read/מגילות/שיר השירים"
+
+# Step 3: Align all chapters
+uv run torah-sync align-playlist "שיר השירים"
+
+# Step 4: (Optional) Manual correction
+uv run torah-sync correct
+
+# Step 5: Render all chapters
+uv run torah-sync render-playlist "שיר השירים"
 ```
 
 ## Manual Alignment Correction
@@ -139,19 +174,22 @@ uv run torah-sync render 1 --output ./my-videos/
 
 ### Render Entire Playlist
 
-To render all alyot for a parasha:
+To render all alyot/chapters for a parasha or megillah:
 
 **Method 1: CLI Command (Recommended)**
 
 ```bash
-# Render all alyot for Ha'azinu parasha
+# Render all alyot for a parasha
 uv run torah-sync render-playlist האזינו
+
+# Render all chapters of a megillah
+uv run torah-sync render-playlist "שיר השירים"
 
 # With custom output directory
 uv run torah-sync render-playlist האזינו --output ./my-videos/
 ```
 
-This automatically finds the playlist, renders all alyot sequentially, and provides a summary report.
+This automatically finds the playlist, renders all alyot/chapters sequentially, and provides a summary report.
 
 **Method 2: Manual Sequential Rendering**
 
@@ -214,8 +252,26 @@ Error: No alignment run found
 
 **Solution**: Run the alignment phase first:
 ```bash
+# For Torah audio (parses filename)
 uv run torah-sync align "data/audio/file.mp4"
+
+# For megillot / pre-ingested audio
+uv run torah-sync align-playlist "שיר השירים"
 ```
+
+## CLI Reference
+
+| Command | Description |
+|---------|-------------|
+| `torah-sync align <file>` | Align a Torah audio file (parses Hebrew filename) |
+| `torah-sync align-playlist <name>` | Align all alyot/chapters of a parasha or megillah |
+| `torah-sync align-alya <id>` | Align a single pre-ingested alya by DB id |
+| `torah-sync correct [id]` | Launch marimo alignment editor |
+| `torah-sync render <id>` | Render video for a single alya |
+| `torah-sync render-playlist <name>` | Render all alyot/chapters of a playlist |
+| `torah-sync status` | Show alignment status for all playlists |
+| `torah-sync evaluate` | Evaluate alignment accuracy |
+| `torah-sync process <file>` | Legacy: align + render in one step |
 
 ## Architecture
 

@@ -41,10 +41,14 @@ class AlignmentRunRepository:
         return self._row_to_model(row)
 
     def get_latest_by_audio(self, alya_audio_id: int) -> AlignmentRun | None:
-        """Get the most recent alignment run for an alya audio."""
+        """Get the best alignment run for an alya audio.
+
+        Prioritizes manually corrected runs over newer automatic runs.
+        Returns the manually corrected run if one exists, otherwise the newest run.
+        """
         conn = get_connection()
         row = conn.execute(
-            "SELECT * FROM alignment_runs WHERE alya_audio_id = ? ORDER BY generated_at DESC LIMIT 1",
+            "SELECT * FROM alignment_runs WHERE alya_audio_id = ? ORDER BY manually_corrected DESC, generated_at DESC LIMIT 1",
             [alya_audio_id],
         ).fetchone()
         if row is None:

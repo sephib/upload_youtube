@@ -14,8 +14,8 @@ class AlyaVideoRepository:
         result = conn.execute(
             """
             INSERT INTO alya_videos
-                (alya_id, file_path, format, resolution_w, resolution_h, frame_rate, codec, duration_seconds, youtube_video_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (alya_id, file_path, format, resolution_w, resolution_h, frame_rate, codec, duration_seconds, youtube_video_id, thumbnail_path)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             RETURNING id
             """,
             [
@@ -28,6 +28,7 @@ class AlyaVideoRepository:
                 video.codec,
                 video.duration_seconds,
                 video.youtube_video_id,
+                video.thumbnail_path,
             ],
         ).fetchone()
         video.id = result[0]
@@ -63,7 +64,7 @@ class AlyaVideoRepository:
             """
             UPDATE alya_videos
             SET alya_id = ?, file_path = ?, format = ?, resolution_w = ?, resolution_h = ?,
-                frame_rate = ?, codec = ?, duration_seconds = ?, youtube_video_id = ?
+                frame_rate = ?, codec = ?, duration_seconds = ?, youtube_video_id = ?, thumbnail_path = ?
             WHERE id = ?
             """,
             [
@@ -76,6 +77,7 @@ class AlyaVideoRepository:
                 video.codec,
                 video.duration_seconds,
                 video.youtube_video_id,
+                video.thumbnail_path,
                 video.id,
             ],
         )
@@ -100,4 +102,5 @@ class AlyaVideoRepository:
             duration_seconds=row[8],
             youtube_video_id=row[9],
             created_at=row[10],
+            thumbnail_path=row[11],
         )

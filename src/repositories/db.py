@@ -1,6 +1,7 @@
 # Edited by Claude Opus 4.6
 """DuckDB connection manager and schema initialization."""
 
+import atexit
 import logging
 import threading
 
@@ -13,21 +14,35 @@ logger = logging.getLogger(__name__)
 _local = threading.local()
 
 
-def get_connection() -> duckdb.DuckDBPyConnection:
-    """Get a thread-local DuckDB connection, creating if needed."""
-    if not hasattr(_local, "conn") or _local.conn is None:
+def get_connection(read_only: bool = False) -> duckdb.DuckDBPyConnection:
+    """Get a thread-local DuckDB connection, creating if needed.
+
+    Args:
+        read_only: Open in read-only mode (allows concurrent access).
+    """
+    # Edited by Claude Opus 4.6
+    attr = "conn_ro" if read_only else "conn"
+    if not hasattr(_local, attr) or getattr(_local, attr) is None:
         db_path = get_db_path()
-        logger.debug(f"{db_path=}")
-        _local.conn = duckdb.connect(str(db_path))
-        ensure_schema(_local.conn)
-    return _local.conn
+        logger.debug(f"{db_path=}, {read_only=}")
+        conn = duckdb.connect(str(db_path), read_only=read_only)
+        if not read_only:
+            ensure_schema(conn)
+        setattr(_local, attr, conn)
+    return getattr(_local, attr)
 
 
 def close_connection() -> None:
-    """Close the thread-local DuckDB connection if open."""
-    if hasattr(_local, "conn") and _local.conn is not None:
-        _local.conn.close()
-        _local.conn = None
+    """Close all thread-local DuckDB connections if open."""
+    # Edited by Claude Opus 4.6 - close both write and read-only connections
+    for attr in ("conn", "conn_ro"):
+        conn = getattr(_local, attr, None)
+        if conn is not None:
+            conn.close()
+            setattr(_local, attr, None)
+
+
+atexit.register(close_connection)
 
 
 def ensure_schema(conn: duckdb.DuckDBPyConnection) -> None:
@@ -37,15 +52,17 @@ def ensure_schema(conn: duckdb.DuckDBPyConnection) -> None:
         "seq_playlists", "seq_alyot", "seq_alya_audio", "seq_alya_videos",
         "seq_alignment_runs", "seq_alya_ranges", "seq_pasuk_alignments",
         # YouTube sequences (added by Claude Sonnet 4.5)
-        "seq_youtube_thumbnails", "seq_youtube_uploads", "seq_youtube_playlist_meta"
+        "seq_youtube_thumbnails", "seq_youtube_uploads", "seq_youtube_playlist_meta", "seq_youtube_keywords"
     ):
         conn.execute(f"CREATE SEQUENCE IF NOT EXISTS {seq}")
 
+    # Edited by Claude Opus 4.6 — added playlist_type for megillot support
     conn.execute("""
         CREATE TABLE IF NOT EXISTS playlists (
             id INTEGER PRIMARY KEY DEFAULT nextval('seq_playlists'),
             name VARCHAR NOT NULL UNIQUE,
             book VARCHAR NOT NULL,
+            playlist_type VARCHAR NOT NULL DEFAULT 'parasha',
             chapter_start INTEGER NOT NULL CHECK (chapter_start > 0),
             verse_start INTEGER NOT NULL CHECK (verse_start > 0),
             chapter_end INTEGER NOT NULL CHECK (chapter_end > 0),
@@ -60,7 +77,7 @@ def ensure_schema(conn: duckdb.DuckDBPyConnection) -> None:
             id INTEGER PRIMARY KEY DEFAULT nextval('seq_alyot'),
             playlist_id INTEGER NOT NULL REFERENCES playlists(id),
             name VARCHAR NOT NULL,
-            order_num INTEGER NOT NULL CHECK (order_num BETWEEN 1 AND 9),
+            order_num INTEGER NOT NULL CHECK (order_num BETWEEN 1 AND 30),
             state VARCHAR NOT NULL DEFAULT 'pending',
             created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
             UNIQUE (playlist_id, order_num)
@@ -188,8 +205,65 @@ def ensure_schema(conn: duckdb.DuckDBPyConnection) -> None:
         )
     """)
 
+    # YouTube Keywords Table (added by Claude Sonnet 4.5)
+    # Stores tiered keyword strategy for SEO optimization
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS youtube_keywords (
+            id INTEGER PRIMARY KEY DEFAULT nextval('seq_youtube_keywords'),
+            alya_id INTEGER NOT NULL UNIQUE REFERENCES alyot(id),
+            tier1_keywords VARCHAR[] NOT NULL,
+            tier2_keywords VARCHAR[] NOT NULL,
+            tier3_keywords VARCHAR[] NOT NULL,
+            tier4_keywords VARCHAR[] NOT NULL,
+            combined_tags VARCHAR NOT NULL,
+            tag_count INTEGER NOT NULL,
+            char_count INTEGER NOT NULL,
+            created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
+            updated_at TIMESTAMP NOT NULL DEFAULT current_timestamp
+        )
+    """)
+
     # YouTube indexes for performance
     conn.execute("CREATE INDEX IF NOT EXISTS idx_youtube_thumbnails_video_id ON youtube_thumbnails(video_id)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_youtube_uploads_alya_video ON youtube_uploads(alya_video_id)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_youtube_uploads_status ON youtube_uploads(upload_status)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_youtube_playlist_meta_playlist ON youtube_playlist_meta(playlist_id)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_youtube_keywords_alya ON youtube_keywords(alya_id)")
+
+    # Edited by Claude Opus 4.6 — migrations for megillot support
+    _migrate_playlists_add_type(conn)
+    # Edited by Claude Sonnet 4.5 — migrations for local thumbnail support
+    _migrate_alya_videos_add_thumbnail(conn)
+
+
+def _migrate_playlists_add_type(conn: duckdb.DuckDBPyConnection) -> None:
+    """Add playlist_type column to playlists if missing (migration)."""
+    cols = {
+        row[0]
+        for row in conn.execute(
+            "SELECT column_name FROM information_schema.columns "
+            "WHERE table_name = 'playlists'"
+        ).fetchall()
+    }
+    if "playlist_type" not in cols:
+        logger.info("Migrating playlists table: adding playlist_type column")
+        conn.execute("ALTER TABLE playlists ADD COLUMN playlist_type VARCHAR DEFAULT 'parasha'")
+        conn.execute("UPDATE playlists SET playlist_type = 'parasha' WHERE playlist_type IS NULL")
+
+
+def _migrate_alya_videos_add_thumbnail(conn: duckdb.DuckDBPyConnection) -> None:
+    """Add thumbnail_path column to alya_videos table (migration)."""
+    cols = {
+        row[0]
+        for row in conn.execute(
+            "SELECT column_name FROM information_schema.columns "
+            "WHERE table_name = 'alya_videos'"
+        ).fetchall()
+    }
+    if "thumbnail_path" not in cols:
+        logger.info("Migrating alya_videos table: adding thumbnail_path column")
+        conn.execute("ALTER TABLE alya_videos ADD COLUMN thumbnail_path VARCHAR")
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_alya_videos_thumbnail "
+            "ON alya_videos(thumbnail_path)"
+        )

@@ -70,3 +70,4 @@ config/client_secrets.json
 config/youtube_token.pickle
 data/thumbnails/*.jpg
 data/thumbnails/*.png
+data/torah_read/

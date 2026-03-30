@@ -68,6 +68,75 @@ def align(audio_file: Path):
         sys.exit(2)
 
 
+# Edited by Claude Opus 4.6 — align by alya_id for megillot
+@cli.command("align-alya")
+@click.argument("alya_id", type=int)
+def align_alya(alya_id: int):
+    """Align a pre-ingested alya by its DB id.
+
+    Use this for megillot or any audio already registered in DuckDB
+    (bypasses filename parsing).
+
+    Example:
+        torah-sync align-alya 487
+        torah-sync status  # to find alya IDs
+    """
+    logger.info(f"Aligning alya {alya_id=}")
+
+    try:
+        from src.services.alignment_pipeline import AlignmentPipeline
+
+        pipeline = AlignmentPipeline()
+        alignment_run, pasuk_alignments = pipeline.align_by_alya(alya_id)
+
+        click.echo(f"Alignment complete (run_id={alignment_run.id})")
+        click.echo(f"  Verses: {len(pasuk_alignments)}")
+        click.echo(f"  Quality: {alignment_run.alignment_quality:.2f}")
+
+    except TorahSyncError as e:
+        click.echo(f"Error: {e}", err=True)
+        sys.exit(1)
+    except Exception as e:
+        click.echo(f"Unexpected error: {e}", err=True)
+        sys.exit(2)
+
+
+# Edited by Claude Opus 4.6 — align entire playlist
+@cli.command("align-playlist")
+@click.argument("playlist_name", type=str)
+def align_playlist_cmd(playlist_name: str):
+    """Align all alyot/chapters of a parasha or megillah.
+
+    PLAYLIST_NAME is the Hebrew name (e.g., "שיר השירים", "האזינו").
+
+    Example:
+        torah-sync align-playlist "שיר השירים"
+        torah-sync align-playlist האזינו
+    """
+    logger.info(f"Aligning playlist {playlist_name=}")
+
+    try:
+        from src.services.alignment_pipeline import AlignmentPipeline
+
+        pipeline = AlignmentPipeline()
+        results = pipeline.align_playlist(playlist_name)
+
+        click.echo(f"\nAligned {len(results)} alyot for '{playlist_name}':")
+        for alignment_run, pasuk_alignments in results:
+            click.echo(
+                f"  run_id={alignment_run.id}  "
+                f"verses={len(pasuk_alignments)}  "
+                f"quality={alignment_run.alignment_quality:.2f}"
+            )
+
+    except TorahSyncError as e:
+        click.echo(f"Error: {e}", err=True)
+        sys.exit(1)
+    except Exception as e:
+        click.echo(f"Unexpected error: {e}", err=True)
+        sys.exit(2)
+
+
 @cli.command()
 @click.argument("alya_id", type=int, required=False)
 def correct(alya_id: int | None):
